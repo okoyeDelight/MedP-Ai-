@@ -33,7 +33,7 @@ if st.button("Search Remedies"):
         with st.spinner("Searching global texts..."):
             try:
                 chat = client.chats.create(
-                    model="gemini-2.0-flash",
+                    model="gemini-1.5-flash",
                     config=dict(system_instruction=expert_prompt)
                 )
                 response = chat.send_message(user_input)
