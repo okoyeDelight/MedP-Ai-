@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # 1. Setup
-genai.configure(api_key="AIzaSyDScvVrWLB_KzagEm517qV6BTeyQfhpbUY")
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 st.set_page_config(page_title="Herbal AI", page_icon="🌿")
 st.title("🌿 Herbal Remedy AI Guide")
