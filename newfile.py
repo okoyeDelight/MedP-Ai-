@@ -21,7 +21,7 @@ if st.button("Search Remedies"):
             try:
                 # --- PART A: Text Generation (Gemini 3.1 Flash) ---
                 # Using the latest 2026 stable model for the "Brain"
-                text_model = genai.GenerativeModel('gemini-3.1-flash')
+                text_model = genai.GenerativeModel('gemini-3-flash-preview')
                 
                 prompt = (
                     f"You are a Pharmacognosy expert specializing in Nigerian medicinal plants. "
