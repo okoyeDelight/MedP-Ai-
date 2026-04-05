@@ -19,7 +19,7 @@ if st.button("Search Remedies"):
         with st.spinner("Analyzing botanical data and local names..."):
             try:
                 # --- PART A: Text Generation (Gemini 3) ---
-                text_model = genai.GenerativeModel('gemini-3-flash-preview')
+                text_model = genai.GenerativeModel('gemini-3.1-flash')
                 
                 # Refined prompt for Nigerian context
                 prompt = (
@@ -48,7 +48,7 @@ if st.button("Search Remedies"):
                     
                     with st.status(f"Generating illustration for {latin_name}...") as status:
                         # Call the 2026 Image Model
-                        img_model = genai.GenerativeModel('imagen-3')
+                        img_model = genai.GenerativeModel('gemini-3.1-flash-image-preview')
                         
                         img_prompt = (
                             f"A professional, scientific botanical illustration of {latin_name} "
