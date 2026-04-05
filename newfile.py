@@ -19,7 +19,7 @@ if st.button("Search Remedies"):
         with st.spinner("Analyzing botanical data and local names..."):
             try:
                 # --- PART A: Text Generation (Gemini 3) ---
-                text_model = genai.GenerativeModel('gemini-3.1-flash')
+                text_model = genai.GenerativeModel('gemini-3-flash-preview')
                 
                 # Refined prompt for Nigerian context
                 prompt = (
