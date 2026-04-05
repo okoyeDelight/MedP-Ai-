@@ -6,7 +6,7 @@ genai.configure(api_key="AIzaSyDScvVrWLB_KzagEm517qV6BTeyQfhpbUY")
 
 st.set_page_config(page_title="Herbal AI", page_icon="🌿")
 st.title("🌿 Herbal Remedy AI Guide")
-st.write("Pharmacognosy Assistant for Pharmacy Students")
+st.write("Pharmacognosy Assistant")
 
 # 2. Input
 user_input = st.text_input("What is the symptom?")
@@ -16,7 +16,7 @@ if st.button("Search Remedies"):
     if user_input:
         with st.spinner("Analyzing..."):
             try:
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-3.1-flash')
                 prompt = f"You are a Pharmacognosy expert. Provide a layman herbal remedy for {user_input} with plant name, preparation, and safety."
                 response = model.generate_content(prompt)
                 st.success("Analysis Complete!")
