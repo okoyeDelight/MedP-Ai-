@@ -48,7 +48,7 @@ if st.button("Search Remedies"):
                     
                     with st.status(f"Generating illustration for {latin_name}...") as status:
                         # Call the 2026 Image Model
-                        img_model = genai.GenerativeModel('gemini-3.1-flash-image-preview')
+                        img_model = genai.GenerativeModel('gemini-2.5-flash-image')
                         
                         img_prompt = (
                             f"A professional, scientific botanical illustration of {latin_name} "
