@@ -16,7 +16,7 @@ if st.button("Search Remedies"):
     if user_input:
         with st.spinner("Analyzing..."):
             try:
-                model = genai.GenerativeModel('gemini-3.1-flash')
+                model = genai.GenerativeModel('gemini-3-flash-preview')
                 prompt = f"You are a Pharmacognosy expert. Provide a layman herbal remedy for {user_input} with plant name, preparation, and safety."
                 response = model.generate_content(prompt)
                 st.success("Analysis Complete!")
