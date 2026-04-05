@@ -1,6 +1,7 @@
 streamlit
 google-generativeai
-duckduckgo_search
+wikipedia
+
 
 
 
