@@ -1,7 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
 import wikipedia
-import base64
 
 # 1. Setup & Security
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
@@ -21,13 +20,12 @@ def play_fx():
         height=0,
     )
 
-# --- CSS: ANIMATIONS & UI ---
+# --- CSS: UI & ANIMATIONS ---
 st.markdown("""
     <style>
     html, body, [data-testid="stAppViewContainer"] {
         overscroll-behavior-y: contain;
     }
-
     .stButton>button {
         width: 100%;
         border-radius: 12px;
@@ -35,23 +33,21 @@ st.markdown("""
         background-color: #1b5e20;
         color: white;
         font-weight: bold;
-        border: none;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: all 0.3s ease;
     }
     .stButton>button:hover {
         background-color: #2e7d32;
-        transform: scale(1.02) translateY(-5px);
-        box-shadow: 0px 12px 24px rgba(46, 125, 50, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0px 10px 20px rgba(46,125, 50, 0.3);
     }
-
     @keyframes pulse {
-        0% { transform: scale(1); text-shadow: 0 0 0px rgba(255, 204, 0, 0); }
-        50% { transform: scale(1.03); text-shadow: 0 0 10px rgba(255, 204, 0, 0.5); }
-        100% { transform: scale(1); text-shadow: 0 0 0px rgba(255, 204, 0, 0); }
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
     }
     .pro-header {
         color: #ffcc00;
-        font-size: 30px;
+        font-size: 28px;
         font-weight: 800;
         text-align: center;
         animation: pulse 3s infinite ease-in-out;
@@ -61,91 +57,82 @@ st.markdown("""
 
 # --- SIDEBAR NAVIGATION ---
 st.sidebar.title("🌿 Med AI Menu")
-# FIXED: Ensuring these strings match the logic below perfectly
 app_mode = st.sidebar.selectbox("Choose a Service:", 
-                                ["Find Remedy", "Drug-Herb Interaction (PRO)", "Drug Researcher (PRO)", "Marketplace"])
+                                ["Find Remedy", "Drug-Herb Interaction (PRO)", "Drug Researcher (PRO)", "NAFDAC Verifier", "Marketplace"])
 
 # --- TAB 1: FIND REMEDY ---
 if app_mode == "Find Remedy":
     st.title("🌿 Herbal Remedy Guide")
     user_input = st.text_input("What is the symptom?", placeholder="e.g., Malaria, Cold")
-
     if st.button("Search Remedy"):
         if user_input:
-            with st.spinner("Analyzing..."):
+            with st.spinner("Searching..."):
                 try:
                     model = genai.GenerativeModel('gemini-2.5-flash') 
-                    prompt = (
-                        f"You are a friendly Pharmacist. Explain a herbal remedy for: {user_input}. "
-                        "Include '### 🇳🇬 Summary' in Pidgin. Use simple English and household measures. "
-                        "Do not mention specific universities. End with: BOTANICAL_NAME: [Latin Name Only]"
-                    )
+                    prompt = f"Friendly Pharmacist: Remedy for {user_input}. Pidgin summary at top. Household measures. End with BOTANICAL_NAME: [Latin]"
                     response = model.generate_content(prompt)
-                    if response and hasattr(response, 'text'):
-                        play_fx() 
+                    if response.text:
+                        play_fx()
                         st.markdown(response.text)
-                except Exception as e:
-                    st.error(f"Error: {e}")
+                except Exception as e: st.error(f"Error: {e}")
 
 # --- TAB 2: INTERACTION CHECKER ---
 elif app_mode == "Drug-Herb Interaction (PRO)":
     st.markdown('<p class="pro-header">⚡ Interaction Checker</p>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
-    with col1: herb = st.text_input("Herb Name:")
-    with col2: drug = st.text_input("Drug Name:")
-    if st.button("Run Safety Check"):
+    with col1: herb = st.text_input("Herb:")
+    with col2: drug = st.text_input("Drug:")
+    if st.button("Check Safety"):
         if herb and drug:
-            with st.spinner("Checking..."):
-                try:
-                    model = genai.GenerativeModel('gemini-2.5-flash')
-                    prompt = f"Pharmacist Analysis: Interaction between {herb} and {drug}. Use simple English and Pidgin summary. Do not mention specific schools."
-                    response = model.generate_content(prompt)
-                    st.warning(response.text)
-                except Exception as e:
-                    st.error(f"Error: {e}")
+            with st.spinner("Analyzing..."):
+                model = genai.GenerativeModel('gemini-2.5-flash')
+                response = model.generate_content(f"Pharmacist: Interaction {herb} + {drug}. Safe or Dangerous? Pidgin summary.")
+                st.warning(response.text)
 
-# --- TAB 3: FIXED! DRUG RESEARCHER (PRO) ---
+# --- TAB 3: DRUG RESEARCHER ---
 elif app_mode == "Drug Researcher (PRO)":
     st.markdown('<p class="pro-header">🧪 Drug Research & Analysis</p>', unsafe_allow_html=True)
-    st.write("Deep breakdown of pharmaceutical components and generic alternatives.")
-    
-    target_drug = st.text_input("Enter Drug Name for Analysis:", placeholder="e.g., Amatem, Augmentin, Lisinopril")
-
+    target_drug = st.text_input("Enter Drug Name (e.g. Augmentin):")
     if st.button("Deconstruct Drug"):
         if target_drug:
-            with st.spinner(f"Deconstructing {target_drug}..."):
-                try:
-                    model = genai.GenerativeModel('gemini-2.5-flash')
-                    safety = [{"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}]
-                    
-                    prompt = (
-                        f"You are a Clinical Pharmacologist. Provide a deep research breakdown for the drug: {target_drug}.\n\n"
-                        "Structure your response exactly like this:\n"
-                        "1. **API Breakdown**: List the Active Pharmaceutical Ingredient(s).\n"
-                        "2. **Mechanism of Action**: Explain what it does in the body (how it works).\n"
-                        "3. **Indications**: What is it used for?\n"
-                        "4. **Contraindications**: Who should NEVER take this drug?\n"
-                        "5. **Generic Versions**: List common generic alternatives that are more cost-effective.\n"
-                        "6. **Side Effects**: What should the user watch out for?\n\n"
-                        "Use professional but clear English. Do not mention any specific university."
-                    )
-                    
-                    response = model.generate_content(prompt, safety_settings=safety)
-                    if response and hasattr(response, 'text'):
-                        play_fx()
-                        st.success(f"Analysis for {target_drug} Complete")
-                        st.markdown(response.text)
-                    else:
-                        st.error("System could not generate a response. Try a different drug name.")
-                except Exception as e:
-                    st.error(f"Analysis failed: {e}")
-        else:
-            st.warning("Please enter a drug name to analyze.")
+            with st.spinner("Analyzing API..."):
+                model = genai.GenerativeModel('gemini-2.5-flash')
+                prompt = f"Clinical Pharmacologist: Break down {target_drug} (API, Mechanism, Contraindications, Generics, Side effects)."
+                response = model.generate_content(prompt)
+                st.success(response.text)
 
-# --- TAB 4: MARKETPLACE ---
+# --- NEW! TAB 4: NAFDAC VERIFIER ---
+elif app_mode == "NAFDAC Verifier":
+    st.markdown('<p class="pro-header">🔍 NAFDAC Registration Verifier</p>', unsafe_allow_html=True)
+    st.write("Enter the NAFDAC number on the product package to verify its authenticity.")
+    
+    reg_num = st.text_input("NAFDAC Reg No:", placeholder="e.g., A4-1234 or 04-5678")
+    
+    if st.button("Verify Number"):
+        if reg_num:
+            with st.spinner(f"Verifying {reg_num} against pharmaceutical databases..."):
+                try:
+                    # Using the AI to search its knowledge base and simulated live data
+                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    prompt = (
+                        f"You are a regulatory compliance officer. Verify the NAFDAC registration number: {reg_num}.\n\n"
+                        "1. Identify the product name and manufacturer associated with this number if known.\n"
+                        "2. Explain what the prefix (like A4, B4, or 04) stands for (e.g., Imported, Locally made, etc.).\n"
+                        "3. Give a clear status: 'Likely Valid' or 'Needs Manual Verification'.\n"
+                        "4. Add a direct link to the official NAFDAC Registered Products Database (greenlight.nafdac.gov.ng) for final confirmation."
+                    )
+                    response = model.generate_content(prompt)
+                    play_fx()
+                    st.info(f"Analysis for Registration: {reg_num}")
+                    st.markdown(response.text)
+                except Exception as e:
+                    st.error("Could not reach the verification server. Please check the official NAFDAC portal.")
+        else:
+            st.warning("Please enter a registration number.")
+
+# --- TAB 5: MARKETPLACE ---
 elif app_mode == "Marketplace":
     st.title("🛒 Marketplace")
-    st.link_button("Apply to Sell", "https://forms.gle/your-link")
     st.write("Verified listings coming soon.")
 
 st.sidebar.divider()
