@@ -101,7 +101,7 @@ elif app_mode == "Drug Researcher (PRO)":
                 response = model.generate_content(prompt)
                 st.success(response.text)
 
-# --- TAB 4: NAFDAC VERIFIER (STABLE 2.5 VERSION) ---
+# --- TAB 4: NAFDAC VERIFIER (STABLE 2.5 SEARCH) ---
 elif app_mode == "NAFDAC Verifier":
     st.markdown('<p class="pro-header">🔍 Live NAFDAC Verifier</p>', unsafe_allow_html=True)
     st.write("Verifying registration numbers using live Google Search grounding.")
@@ -110,37 +110,35 @@ elif app_mode == "NAFDAC Verifier":
     
     if st.button("Verify Registration"):
         if reg_num:
-            with st.spinner(f"Searching live records for {reg_num}..."):
+            with st.spinner(f"Scanning live records for {reg_num}..."):
                 try:
-                    # THE FIX: 2.5 Flash now uses 'google_search' instead of retrieval
+                    # THE FIX: We use the simple string 'google_search' 
+                    # This avoids the "Unknown field" dictionary error
                     model = genai.GenerativeModel(
                         model_name='gemini-2.5-flash',
-                        tools=[{'google_search': {}}] 
+                        tools='google_search' 
                     )
 
                     prompt = (
-                        f"Perform a Google Search to verify the NAFDAC number: {reg_num}.\n\n"
-                        "1. Identify the exact product and manufacturer.\n"
-                        "2. Explain the prefix (e.g., A1, B4).\n"
+                        f"Search the internet for the NAFDAC registration number: {reg_num}.\n\n"
+                        "1. Identify the exact product name and manufacturer.\n"
+                        "2. Explain the prefix (e.g., A1 means imported food, B4 means drugs).\n"
                         "3. Give a clear 'Likely Authentic' or 'Unverified' status.\n"
-                        "4. Include the link to greenlight.nafdac.gov.ng for final check.\n"
-                        "Do not mention any university names or professors."
+                        "4. Include the link to the official NAFDAC portal for the user."
                     )
                     
                     response = model.generate_content(prompt)
                     
                     if response and hasattr(response, 'text'):
                         play_fx() # Success sound!
-                        st.success(f"Results for: {reg_num}")
+                        st.success(f"Results found for: {reg_num}")
                         st.markdown(response.text)
                     else:
-                        st.error("Search failed to return data. The number might be invalid.")
+                        st.error("Live search returned no data. The number might be invalid.")
                         
                 except Exception as e:
-                    # This will help catch any remaining permission issues
                     st.error(f"Search Error: {e}")
-                    if "403" in str(e):
-                        st.info("Ayo, if you see 403, make sure you Accepted the Terms in AI Studio!")
+                    st.info("Ensure 'Google Search' is toggled ON in your Google AI Studio project settings.")
         else:
             st.warning("Please enter a registration number.")
             
