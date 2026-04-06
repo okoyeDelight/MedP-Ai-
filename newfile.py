@@ -61,6 +61,7 @@ st.markdown("""
 
 # --- SIDEBAR NAVIGATION ---
 st.sidebar.title("🌿 Med AI Menu")
+# FIXED: Ensuring these strings match the logic below perfectly
 app_mode = st.sidebar.selectbox("Choose a Service:", 
                                 ["Find Remedy", "Drug-Herb Interaction (PRO)", "Drug Researcher (PRO)", "Marketplace"])
 
@@ -77,7 +78,7 @@ if app_mode == "Find Remedy":
                     prompt = (
                         f"You are a friendly Pharmacist. Explain a herbal remedy for: {user_input}. "
                         "Include '### 🇳🇬 Summary' in Pidgin. Use simple English and household measures. "
-                        "End with: BOTANICAL_NAME: [Latin Name Only]"
+                        "Do not mention specific universities. End with: BOTANICAL_NAME: [Latin Name Only]"
                     )
                     response = model.generate_content(prompt)
                     if response and hasattr(response, 'text'):
@@ -95,13 +96,16 @@ elif app_mode == "Drug-Herb Interaction (PRO)":
     if st.button("Run Safety Check"):
         if herb and drug:
             with st.spinner("Checking..."):
-                model = genai.GenerativeModel('gemini-2.5-flash')
-                prompt = f"Analyze interaction between {herb} and {drug}. Use simple English and Pidgin summary."
-                response = model.generate_content(prompt)
-                st.warning(response.text)
+                try:
+                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    prompt = f"Pharmacist Analysis: Interaction between {herb} and {drug}. Use simple English and Pidgin summary. Do not mention specific schools."
+                    response = model.generate_content(prompt)
+                    st.warning(response.text)
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
-# --- TAB 3: NEW! DRUG RESEARCHER (PRO) ---
-elif app_mode == "Drug-Researcher (PRO)":
+# --- TAB 3: FIXED! DRUG RESEARCHER (PRO) ---
+elif app_mode == "Drug Researcher (PRO)":
     st.markdown('<p class="pro-header">🧪 Drug Research & Analysis</p>', unsafe_allow_html=True)
     st.write("Deep breakdown of pharmaceutical components and generic alternatives.")
     
@@ -112,7 +116,6 @@ elif app_mode == "Drug-Researcher (PRO)":
             with st.spinner(f"Deconstructing {target_drug}..."):
                 try:
                     model = genai.GenerativeModel('gemini-2.5-flash')
-                    # Safety settings for technical content
                     safety = [{"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}]
                     
                     prompt = (
@@ -124,7 +127,7 @@ elif app_mode == "Drug-Researcher (PRO)":
                         "4. **Contraindications**: Who should NEVER take this drug?\n"
                         "5. **Generic Versions**: List common generic alternatives that are more cost-effective.\n"
                         "6. **Side Effects**: What should the user watch out for?\n\n"
-                        "Use professional but clear English. Do not mention specific universities."
+                        "Use professional but clear English. Do not mention any specific university."
                     )
                     
                     response = model.generate_content(prompt, safety_settings=safety)
@@ -132,6 +135,8 @@ elif app_mode == "Drug-Researcher (PRO)":
                         play_fx()
                         st.success(f"Analysis for {target_drug} Complete")
                         st.markdown(response.text)
+                    else:
+                        st.error("System could not generate a response. Try a different drug name.")
                 except Exception as e:
                     st.error(f"Analysis failed: {e}")
         else:
