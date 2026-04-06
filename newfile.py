@@ -101,10 +101,10 @@ elif app_mode == "Drug Researcher (PRO)":
                 response = model.generate_content(prompt)
                 st.success(response.text)
 
-# --- TAB 4: NAFDAC VERIFIER (STABLE 2.5 SEARCH) ---
+# --- TAB 4: NAFDAC VERIFIER (STABLE 2.5 VERSION) ---
 elif app_mode == "NAFDAC Verifier":
     st.markdown('<p class="pro-header">🔍 Live NAFDAC Verifier</p>', unsafe_allow_html=True)
-    st.write("Checking registration numbers using live Google Search grounding.")
+    st.write("Verifying registration numbers using live Google Search grounding.")
     
     reg_num = st.text_input("Enter NAFDAC Reg No:", placeholder="e.g., A11-1162")
     
@@ -112,36 +112,37 @@ elif app_mode == "NAFDAC Verifier":
         if reg_num:
             with st.spinner(f"Searching live records for {reg_num}..."):
                 try:
-                    # THE FIX: Using the precise 2.5 Search Syntax
+                    # THE FIX: 2.5 Flash now uses 'google_search' instead of retrieval
                     model = genai.GenerativeModel(
                         model_name='gemini-2.5-flash',
-                        tools=[{"google_search_retrieval": {}}] # This is the 2.5 standard
+                        tools=[{'google_search': {}}] 
                     )
 
                     prompt = (
-                        f"Perform a Google Search to verify the NAFDAC registration number: {reg_num}.\n\n"
-                        "1. Identify the specific product and manufacturer if found.\n"
-                        "2. Explain what the prefix letters stand for.\n"
+                        f"Perform a Google Search to verify the NAFDAC number: {reg_num}.\n\n"
+                        "1. Identify the exact product and manufacturer.\n"
+                        "2. Explain the prefix (e.g., A1, B4).\n"
                         "3. Give a clear 'Likely Authentic' or 'Unverified' status.\n"
                         "4. Include the link to greenlight.nafdac.gov.ng for final check.\n"
-                        "Do not mention any university names."
+                        "Do not mention any university names or professors."
                     )
                     
                     response = model.generate_content(prompt)
                     
                     if response and hasattr(response, 'text'):
-                        play_fx()
-                        st.success(f"Search Complete for: {reg_num}")
+                        play_fx() # Success sound!
+                        st.success(f"Results for: {reg_num}")
                         st.markdown(response.text)
                     else:
-                        st.error("AI couldn't find a search result. The number might be new or invalid.")
+                        st.error("Search failed to return data. The number might be invalid.")
                         
                 except Exception as e:
-                    # This will show us if the "Permit" is still the issue
+                    # This will help catch any remaining permission issues
                     st.error(f"Search Error: {e}")
-                    st.info("If you see '403 Permission Denied', abeg go accept those Terms of Service in AI Studio.")
+                    if "403" in str(e):
+                        st.info("Ayo, if you see 403, make sure you Accepted the Terms in AI Studio!")
         else:
-            st.warning("Please enter a number first, Ayo!")
+            st.warning("Please enter a registration number.")
             
 # --- TAB 5: MARKETPLACE ---
 elif app_mode == "Marketplace":
