@@ -114,7 +114,7 @@ elif app_mode == "NAFDAC Verifier":
                 try:
                     # THE FIX: Using the precise 2.5 Search Syntax
                     model = genai.GenerativeModel(
-                        model_name='gemini-3.0-flash',
+                        model_name='gemini-2.5-flash',
                         tools=[{"google_search_retrieval": {}}] # This is the 2.5 standard
                     )
 
