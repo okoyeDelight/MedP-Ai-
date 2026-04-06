@@ -101,34 +101,47 @@ elif app_mode == "Drug Researcher (PRO)":
                 response = model.generate_content(prompt)
                 st.success(response.text)
 
-# --- NEW! TAB 4: NAFDAC VERIFIER ---
+# --- TAB 4: NAFDAC VERIFIER (FIXED WITH LIVE SEARCH) ---
 elif app_mode == "NAFDAC Verifier":
-    st.markdown('<p class="pro-header">🔍 NAFDAC Registration Verifier</p>', unsafe_allow_html=True)
-    st.write("Enter the NAFDAC number on the product package to verify its authenticity.")
+    st.markdown('<p class="pro-header">🔍 Live NAFDAC Verifier</p>', unsafe_allow_html=True)
+    st.write("Verifying registration numbers using live AI web search.")
     
-    reg_num = st.text_input("NAFDAC Reg No:", placeholder="e.g., A4-1234 or 04-5678")
+    reg_num = st.text_input("Enter NAFDAC Reg No:", placeholder="e.g., A11-1162 or 04-5678")
     
-    if st.button("Verify Number"):
+    if st.button("Verify Registration"):
         if reg_num:
-            with st.spinner(f"Verifying {reg_num} against pharmaceutical databases..."):
+            with st.spinner(f"Searching the web for NAFDAC record {reg_num}..."):
                 try:
-                    # Using the AI to search its knowledge base and simulated live data
-                    model = genai.GenerativeModel('gemini-2.5-flash')
-                    prompt = (
-                        f"You are a regulatory compliance officer. Verify the NAFDAC registration number: {reg_num}.\n\n"
-                        "1. Identify the product name and manufacturer associated with this number if known.\n"
-                        "2. Explain what the prefix (like A4, B4, or 04) stands for (e.g., Imported, Locally made, etc.).\n"
-                        "3. Give a clear status: 'Likely Valid' or 'Needs Manual Verification'.\n"
-                        "4. Add a direct link to the official NAFDAC Registered Products Database (greenlight.nafdac.gov.ng) for final confirmation."
+                    # THE FIX: Enable Google Search Tooling
+                    # Note: Ensure your API key supports 'google_search' tool
+                    model = genai.GenerativeModel(
+                        model_name='gemini-2.5-flash',
+                        tools=[{"google_search": {}}] 
                     )
+
+                    prompt = (
+                        f"Search the internet specifically for the NAFDAC registration number: {reg_num}.\n\n"
+                        "1. Find the exact product name and manufacturer associated with this number.\n"
+                        "2. Check if this product has been flagged or recalled recently.\n"
+                        "3. Explain the prefix (e.g., A1 means imported food, B4 means drugs).\n"
+                        "4. State clearly if the number looks authentic based on your search results.\n"
+                        "5. Provide the official NAFDAC Greenbook link for the user to double-check."
+                    )
+                    
                     response = model.generate_content(prompt)
-                    play_fx()
-                    st.info(f"Analysis for Registration: {reg_num}")
-                    st.markdown(response.text)
+                    
+                    if response and hasattr(response, 'text'):
+                        play_fx()
+                        st.success(f"Search Results for: {reg_num}")
+                        st.markdown(response.text)
+                    else:
+                        st.error("Could not find live data. Please check the number or visit greenlight.nafdac.gov.ng manually.")
+                        
                 except Exception as e:
-                    st.error("Could not reach the verification server. Please check the official NAFDAC portal.")
+                    st.error(f"Search Error: {e}. Ensure your API key has Search enabled.")
         else:
-            st.warning("Please enter a registration number.")
+            st.warning("Please enter a registration number first.")
+            
 
 # --- TAB 5: MARKETPLACE ---
 elif app_mode == "Marketplace":
