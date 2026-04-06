@@ -101,48 +101,48 @@ elif app_mode == "Drug Researcher (PRO)":
                 response = model.generate_content(prompt)
                 st.success(response.text)
 
-# --- TAB 4: NAFDAC VERIFIER (FIXED WITH LIVE SEARCH) ---
+# --- TAB 4: NAFDAC VERIFIER (STABLE 2.5 SEARCH) ---
 elif app_mode == "NAFDAC Verifier":
     st.markdown('<p class="pro-header">🔍 Live NAFDAC Verifier</p>', unsafe_allow_html=True)
-    st.write("Verifying registration numbers using live AI web search.")
+    st.write("Checking registration numbers using live Google Search grounding.")
     
-    reg_num = st.text_input("Enter NAFDAC Reg No:", placeholder="e.g., A11-1162 or 04-5678")
+    reg_num = st.text_input("Enter NAFDAC Reg No:", placeholder="e.g., A11-1162")
     
     if st.button("Verify Registration"):
         if reg_num:
-            with st.spinner(f"Searching the web for NAFDAC record {reg_num}..."):
+            with st.spinner(f"Searching live records for {reg_num}..."):
                 try:
-                    # THE FIX: Enable Google Search Tooling
-                    # Note: Ensure your API key supports 'google_search' tool
+                    # THE FIX: Using the precise 2.5 Search Syntax
                     model = genai.GenerativeModel(
                         model_name='gemini-2.5-flash',
-                        tools=[{"google_search": {}}] 
+                        tools=[{"google_search_retrieval": {}}] # This is the 2.5 standard
                     )
 
                     prompt = (
-                        f"Search the internet specifically for the NAFDAC registration number: {reg_num}.\n\n"
-                        "1. Find the exact product name and manufacturer associated with this number.\n"
-                        "2. Check if this product has been flagged or recalled recently.\n"
-                        "3. Explain the prefix (e.g., A1 means imported food, B4 means drugs).\n"
-                        "4. State clearly if the number looks authentic based on your search results.\n"
-                        "5. Provide the official NAFDAC Greenbook link for the user to double-check."
+                        f"Perform a Google Search to verify the NAFDAC registration number: {reg_num}.\n\n"
+                        "1. Identify the specific product and manufacturer if found.\n"
+                        "2. Explain what the prefix letters stand for.\n"
+                        "3. Give a clear 'Likely Authentic' or 'Unverified' status.\n"
+                        "4. Include the link to greenlight.nafdac.gov.ng for final check.\n"
+                        "Do not mention any university names."
                     )
                     
                     response = model.generate_content(prompt)
                     
                     if response and hasattr(response, 'text'):
                         play_fx()
-                        st.success(f"Search Results for: {reg_num}")
+                        st.success(f"Search Complete for: {reg_num}")
                         st.markdown(response.text)
                     else:
-                        st.error("Could not find live data. Please check the number or visit greenlight.nafdac.gov.ng manually.")
+                        st.error("AI couldn't find a search result. The number might be new or invalid.")
                         
                 except Exception as e:
-                    st.error(f"Search Error: {e}. Ensure your API key has Search enabled.")
+                    # This will show us if the "Permit" is still the issue
+                    st.error(f"Search Error: {e}")
+                    st.info("If you see '403 Permission Denied', abeg go accept those Terms of Service in AI Studio.")
         else:
-            st.warning("Please enter a registration number first.")
+            st.warning("Please enter a number first, Ayo!")
             
-
 # --- TAB 5: MARKETPLACE ---
 elif app_mode == "Marketplace":
     st.title("🛒 Marketplace")
