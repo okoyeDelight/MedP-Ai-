@@ -101,7 +101,7 @@ elif app_mode == "Drug Researcher (PRO)":
                 response = model.generate_content(prompt)
                 st.success(response.text)
 
-# --- TAB 4: NAFDAC VERIFIER (STABLE 2.5 SEARCH) ---
+# --- TAB 4: NAFDAC VERIFIER (STABLE 2026 SYNTAX) ---
 elif app_mode == "NAFDAC Verifier":
     st.markdown('<p class="pro-header">🔍 Live NAFDAC Verifier</p>', unsafe_allow_html=True)
     st.write("Verifying registration numbers using live Google Search grounding.")
@@ -112,33 +112,33 @@ elif app_mode == "NAFDAC Verifier":
         if reg_num:
             with st.spinner(f"Scanning live records for {reg_num}..."):
                 try:
-                    # THE FIX: We use the simple string 'google_search' 
-                    # This avoids the "Unknown field" dictionary error
+                    # THE FIX: 1. Use the full models/ path. 2. Use the dictionary tool.
                     model = genai.GenerativeModel(
-                        model_name='gemini-2.5-flash',
-                        tools='google_search' 
+                        model_name='models/gemini-2.5-flash',
+                        tools=[{"google_search": {}}] 
                     )
 
                     prompt = (
                         f"Search the internet for the NAFDAC registration number: {reg_num}.\n\n"
                         "1. Identify the exact product name and manufacturer.\n"
-                        "2. Explain the prefix (e.g., A1 means imported food, B4 means drugs).\n"
+                        "2. Explain the prefix (e.g., A1, B4).\n"
                         "3. Give a clear 'Likely Authentic' or 'Unverified' status.\n"
-                        "4. Include the link to the official NAFDAC portal for the user."
+                        "4. Include the link to the official NAFDAC portal."
                     )
                     
                     response = model.generate_content(prompt)
                     
                     if response and hasattr(response, 'text'):
-                        play_fx() # Success sound!
+                        play_fx()
                         st.success(f"Results found for: {reg_num}")
                         st.markdown(response.text)
                     else:
-                        st.error("Live search returned no data. The number might be invalid.")
+                        st.error("Live search returned no data. Check the number or NAFDAC portal.")
                         
                 except Exception as e:
+                    # If it still says "Unknown field", the library update in Step 1 didn't finish!
                     st.error(f"Search Error: {e}")
-                    st.info("Ensure 'Google Search' is toggled ON in your Google AI Studio project settings.")
+                    st.info("Ayo, make sure you updated requirements.txt and rebooted the app in Streamlit Cloud!")
         else:
             st.warning("Please enter a registration number.")
             
