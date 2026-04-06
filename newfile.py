@@ -23,7 +23,7 @@ if app_mode == "Find Remedy":
             with st.spinner("Checking records..."):
                 try:
                     # Using Flash for speed and quota stability
-                    model = genai.GenerativeModel('gemini-1.5-flash') 
+                    model = genai.GenerativeModel('gemini-2.5-flash') 
                     prompt = (
                         f"You are a friendly Nigerian Pharmacist. Explain a remedy for: {user_input}. "
                         "Top section: '### 🇳🇬 The Matter for Short' in Pidgin. "
