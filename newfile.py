@@ -58,8 +58,9 @@ st.markdown("""
 # --- SIDEBAR NAVIGATION ---
 st.sidebar.title("🌿 Med AI Menu")
 app_mode = st.sidebar.selectbox("Choose a Service:", 
-                                ["Find Remedy", "Drug-Herb Interaction (PRO)", "Drug Researcher (PRO)", "NAFDAC Verifier", "Marketplace"])
-
+    ["Find Remedy", "Drug-Herb Interaction (PRO)", "Drug Researcher (PRO)", 
+     "NAFDAC Verifier", "Structure Master Class (NEW)", "Pharmacy Quiz", "Marketplace"])
+     
 # --- TAB 1: FIND REMEDY ---
 if app_mode == "Find Remedy":
     st.title("🌿 Herbal Remedy Guide")
@@ -141,8 +142,66 @@ elif app_mode == "NAFDAC Verifier":
                     st.info("Ayo, make sure you updated requirements.txt and rebooted the app in Streamlit Cloud!")
         else:
             st.warning("Please enter a registration number.")
+            # --- TAB 5: PHARMACY QUIZ MODE ---
+elif app_mode == "Pharmacy Quiz":
+    st.markdown('<p class="pro-header">🎓 Senior Man Quiz Mode</p>', unsafe_allow_html=True)
+    
+    # Initialize Quiz State
+    if 'score' not in st.session_state:
+        st.session_state.score = 0
+    if 'q_idx' not in st.session_state:
+        st.session_state.q_idx = 0
+
+    questions = [
+        {
+            "q": "Which ring system is known as the '3-Rooms-and-a-Parlor'?",
+            "options": ["Benzene", "Imidazole", "Steroid Nucleus", "Phenothiazine"],
+            "answer": "Steroid Nucleus",
+            "hint": "Think of Testosterone or Prednisolone."
+        },
+        {
+            "q": "Which structure uses the '1-3 Rule' for Nitrogen placement?",
+            "options": ["Benzene", "Imidazole", "Pyridine", "Naphthalene"],
+            "answer": "Imidazole",
+            "hint": "Common in Metronidazole (Flagyl)."
+        },
+        {
+            "q": "The 'Butterfly' structure is characteristic of which drug class?",
+            "options": ["Antibiotics", "Antipsychotics (Phenothiazines)", "NSAIDs", "Diuretics"],
+            "answer": "Antipsychotics (Phenothiazines)",
+            "hint": "Think of Chlorpromazine (Largactil)."
+        }
+    ]
+
+    if st.session_state.q_idx < len(questions):
+        q_data = questions[st.session_state.q_idx]
+        st.subheader(f"Question {st.session_state.q_idx + 1}")
+        st.write(q_data["q"])
+        
+        choice = st.radio("Pick your answer:", q_data["options"])
+        
+        if st.button("Submit Answer"):
+            if choice == q_data["answer"]:
+                st.session_state.score += 1
+                st.success("Correct! You be Senior Man!")
+                play_fx()
+            else:
+                st.error(f"Wrong! The correct answer was {q_data['answer']}.")
+                st.info(f"💡 Hint: {q_data['hint']}")
             
-# --- TAB 5: MARKETPLACE ---
+            st.session_state.q_idx += 1
+            st.rerun() # Refresh to show next question
+    else:
+        st.balloons()
+        st.header("🏆 Quiz Completed!")
+        st.write(f"Your Final Score: {st.session_state.score} / {len(questions)}")
+        
+        if st.button("Restart Quiz"):
+            st.session_state.score = 0
+            st.session_state.q_idx = 0
+            st.rerun()
+            
+# --- TAB 6: MARKETPLACE ---
 elif app_mode == "Marketplace":
     st.title("🛒 Marketplace")
     st.write("Verified listings coming soon.")
