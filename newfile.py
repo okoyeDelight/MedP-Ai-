@@ -20,7 +20,7 @@ if st.button("Search Remedies"):
         with st.spinner("Wait small, make I check my pharmacy book..."):
             try:
                 # --- PART A: Text Generation (Gemini 3 Flash) ---
-                text_model = genai.GenerativeModel('gemini-3-flash-preview')
+                text_model = genai.GenerativeModel('gemini-2.5-flash')
                 
                 # The "Household Measure" Prompt
                 prompt = (
@@ -57,7 +57,7 @@ if st.button("Search Remedies"):
                             
                             if plant_images:
                                 st.image(plant_images[0], caption=f"This is the plant: {latin_name}", use_container_width=True)
-                                status.update(label="Picture found!", state="complete")
+                                status.update(label="Look at the picture!", state="complete")
                             else:
                                 status.update(label="No clear picture found, but the info is above.", state="error")
                         except Exception:
