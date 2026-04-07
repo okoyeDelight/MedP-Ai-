@@ -3,7 +3,32 @@ import google.generativeai as genai
 import time
 import pandas as pd
 import json
+import os
 import datetime
+
+# --- MINI DATABASE SETUP ---
+# This creates local files to store global data across all users
+CHAT_DB = "global_chat.json"
+LEADERBOARD_DB = "global_leaderboard.json"
+
+def load_chat():
+    if os.path.exists(CHAT_DB):
+        with open(CHAT_DB, "r") as f:
+            return json.load(f)
+    return [{"user": "System", "text": "Welcome to the Med AI Student Lounge! Discuss your CBTs and structural drawing tips here."}]
+
+def save_chat(chat_list):
+    with open(CHAT_DB, "w") as f:
+        json.dump(chat_list, f)
+
+def load_leaderboard():
+    if os.path.exists(LEADERBOARD_DB):
+        df = pd.read_json(LEADERBOARD_DB)
+        return df
+    return pd.DataFrame([["Prof. Chuks", 150], ["Ada Rx", 120]], columns=['Name', 'Score'])
+
+def save_leaderboard(df):
+    df.to_json(LEADERBOARD_DB)
 
 # 1. Setup & API Config
 try:
@@ -18,7 +43,6 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&display=swap');
 
-    /* Apply font selectively to avoid breaking Streamlit's Material Icons (like the sidebar toggle) */
     p, h1, h2, h3, h4, h5, h6, div.stMarkdown, .stButton>button, .stTextInput input, .stChatInput textarea {
         font-family: 'Poppins', sans-serif !important;
     }
@@ -26,19 +50,11 @@ st.markdown("""
     [data-testid="stAppViewContainer"] { background-color: #0b0f19; color: #f8fafc; }
     [data-testid="stSidebar"] { background-color: #111827; border-right: 1px solid #1f2937; }
 
-    /* Fluid Button Sizing for Mobile */
     .stButton>button {
-        width: 100%; 
-        border-radius: 25px; 
-        padding: 12px 10px; /* Replaced fixed height with flexible padding */
-        background-color: #1e293b; 
-        color: #e2e8f0; 
-        font-size: 14px; 
-        font-weight: 500;
-        border: 1px solid #334155; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-        transition: all 0.3s ease;
-        margin-bottom: 8px;
+        width: 100%; border-radius: 25px; padding: 12px 10px;
+        background-color: #1e293b; color: #e2e8f0; font-size: 14px; font-weight: 500;
+        border: 1px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+        transition: all 0.3s ease; margin-bottom: 8px;
     }
     .stButton>button:hover { 
         background-color: #334155; transform: translateY(-2px); 
@@ -55,23 +71,16 @@ st.markdown("""
 
     .typewriter-container { display: flex; justify-content: center; margin-bottom: 5px; }
     
-    /* Fixed Cursor Width & Adjusted Text Size for Mobile */
     .hello-text {
-        overflow: hidden; 
-        border-right: 3px solid #3b82f6; /* Thinner, realistic cursor */
-        white-space: nowrap;
-        margin: 0 auto; 
-        font-size: 2.8rem; /* Scaled down slightly for mobile */
-        font-weight: 800; color: #ffffff;
-        letter-spacing: 0.08em; 
-        animation: typing 1.5s steps(30, end), blink-caret .75s step-end infinite;
+        overflow: hidden; border-right: 3px solid #3b82f6; white-space: nowrap;
+        margin: 0 auto; font-size: 2.8rem; font-weight: 800; color: #ffffff;
+        letter-spacing: 0.08em; animation: typing 1.5s steps(30, end), blink-caret .75s step-end infinite;
     }
     @keyframes typing { from { width: 0 } to { width: 100% } }
     @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #3b82f6; } }
     
     a.header-anchor { display: none !important; }
 
-    /* REALISTIC FALLING LEAVES */
     .leaf {
         position: fixed; top: -10%; z-index: 9999; user-select: none; pointer-events: none;
         animation: fall linear infinite; opacity: 0.35; 
@@ -101,7 +110,6 @@ st.markdown("""
     .user-bubble { background-color: #1e293b; padding: 15px; border-radius: 15px 15px 0 15px; margin-bottom: 10px; border: 1px solid #334155; }
     .ai-bubble { background-color: #1e40af; padding: 15px; border-radius: 15px 15px 15px 0; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
     
-    /* Community Chat Styles */
     .community-msg { background-color: #1e293b; padding: 12px 18px; border-radius: 15px; margin-bottom: 10px; border-left: 4px solid #10b981; }
     .community-user { color: #10b981; font-weight: 600; font-size: 13px; margin-bottom: 3px; }
     .community-text { color: #e2e8f0; font-size: 15px; }
@@ -112,14 +120,8 @@ st.markdown("""
 
 # --- INITIALIZE SESSION STATE ---
 if 'daily_score' not in st.session_state: st.session_state.daily_score = 0
-if 'leaderboard' not in st.session_state: 
-    st.session_state.leaderboard = pd.DataFrame([["Prof. Chuks", 150], ["Ada Rx", 120]], columns=['Name', 'Score'])
 if 'generated_quiz' not in st.session_state: st.session_state.generated_quiz = None
 if 'quiz_completed_today' not in st.session_state: st.session_state.quiz_completed_today = False
-if 'community_chat' not in st.session_state: 
-    st.session_state.community_chat = [
-        {"user": "System", "text": "Welcome to the Med AI Student Lounge! Discuss your CBTs and structural drawing tips here."}
-    ]
 
 # --- USER PROFILE (SIDEBAR) ---
 st.sidebar.title("🌿 Desprix 2.5")
@@ -152,13 +154,12 @@ if app_mode == "Home":
     """, unsafe_allow_html=True)
 
     quick_query = None
-    col1, col2, col3 = st.columns([1, 4, 1]) # Widened the center column slightly for mobile
+    col1, col2, col3 = st.columns([1, 4, 1])
     with col2:
         if st.button("✨ Verify a NAFDAC Number"): quick_query = "What is the official procedure to verify a NAFDAC registration number in Nigeria?"
         if st.button("✨ Explain a Drug Mechanism"): quick_query = "Explain the mechanism of action of ACE Inhibitors simply."
         if st.button("✨ Help me with CBT Prep"): quick_query = "Give me 3 quick pharmacy pharmacology multiple choice questions with answers."
 
-    # Spacer element to push content up so the fixed chat box doesn't cover the buttons
     st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
     
     user_query = st.chat_input("Ask me anything about medicine...")
@@ -241,12 +242,15 @@ elif app_mode == "Exam Mastery Hub":
                         st.session_state.daily_score += 10
                         st.session_state.quiz_completed_today = True
                         
-                        df = st.session_state.leaderboard
-                        if username in df['Name'].values:
-                            df.loc[df['Name'] == username, 'Score'] += 10
+                        # LOAD GLOBAL LEADERBOARD, UPDATE, AND SAVE
+                        global_lb = load_leaderboard()
+                        if username in global_lb['Name'].values:
+                            global_lb.loc[global_lb['Name'] == username, 'Score'] += 10
                         else:
                             new_row = pd.DataFrame([[username, 10]], columns=['Name', 'Score'])
-                            st.session_state.leaderboard = pd.concat([df, new_row], ignore_index=True)
+                            global_lb = pd.concat([global_lb, new_row], ignore_index=True)
+                        save_leaderboard(global_lb)
+                        
                     else:
                         st.error(f"Wrong! The correct answer was **{daily_q['ans']}**. Try again tomorrow!")
                         st.session_state.quiz_completed_today = True
@@ -344,14 +348,17 @@ elif app_mode == "Structure Master Class":
         else:
             st.warning("Please type a structure name first!")
 
-# --- 6. STUDENT LOUNGE (CHAT) ---
+# --- 6. STUDENT LOUNGE (GLOBAL CHAT) ---
 elif app_mode == "Student Lounge (Chat)":
     st.markdown('<p class="pro-header">💬 Student Lounge</p>', unsafe_allow_html=True)
-    st.write("Chat with other pharmacy students, discuss CBT questions, and share study tips.")
+    st.write("Chat with other pharmacy students globally!")
+    
+    # LOAD GLOBAL CHAT
+    global_chat = load_chat()
     
     chat_container = st.container(height=400)
     with chat_container:
-        for msg in st.session_state.community_chat:
+        for msg in global_chat:
             st.markdown(f"""
                 <div class="community-msg">
                     <div class="community-user">@{msg['user']}</div>
@@ -360,19 +367,28 @@ elif app_mode == "Student Lounge (Chat)":
             """, unsafe_allow_html=True)
             
     new_msg = st.chat_input("Send a message to the lounge...")
+    
     if new_msg:
         if username:
-            st.session_state.community_chat.append({"user": username, "text": new_msg})
-            st.rerun()
+            # SAVE TO GLOBAL CHAT
+            global_chat.append({"user": username, "text": new_msg})
+  save_chat(global_chat)
+            st.rerun() # Refresh screen to show new message
         else:
             st.error("Please set a nickname in the sidebar to chat!")
 
-# --- 7. LEADERBOARD ---
+    # Auto-refresh button (since Streamlit doesn't auto-pull without interaction)
+    if st.button("🔄 Refresh Chat"):
+        st.rerun()
+
+# --- 7. LEADERBOARD (GLOBAL) ---
 elif app_mode == "Leaderboard":
     st.markdown('<p class="pro-header">🏆 Global Leaderboard</p>', unsafe_allow_html=True)
     st.write("Scores update automatically when you complete the Daily Quiz in the Exam Mastery Hub.")
     
-    sorted_lb = st.session_state.leaderboard.sort_values(by='Score', ascending=False).reset_index(drop=True)
+    # LOAD GLOBAL LEADERBOARD
+    global_lb = load_leaderboard()
+    sorted_lb = global_lb.sort_values(by='Score', ascending=False).reset_index(drop=True)
     
     st.dataframe(
         sorted_lb,
