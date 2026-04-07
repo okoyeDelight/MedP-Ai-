@@ -117,6 +117,14 @@ st.markdown("""
     .community-msg { background-color: #1e293b; padding: 12px 18px; border-radius: 15px; margin-bottom: 10px; border-left: 4px solid #10b981; }
     .community-user { color: #10b981; font-weight: 600; font-size: 13px; margin-bottom: 3px; }
     .community-text { color: #e2e8f0; font-size: 15px; }
+    
+    /* Highlight style for when a user is tagged */
+    .tagged-msg {
+        background-color: #27272a; 
+        border-left: 4px solid #fbbf24; 
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+    }
+    .tagged-text { color: #fbbf24; font-weight: bold; }
     </style>
     
     <div class="leaf l1"></div><div class="leaf l2"></div><div class="leaf l3"></div><div class="leaf l4"></div><div class="leaf l5"></div>
@@ -126,6 +134,18 @@ st.markdown("""
 if 'daily_score' not in st.session_state: st.session_state.daily_score = 0
 if 'generated_quiz' not in st.session_state: st.session_state.generated_quiz = None
 if 'quiz_completed_today' not in st.session_state: st.session_state.quiz_completed_today = False
+
+# --- PRE-LOAD CHAT FOR NOTIFICATIONS ---
+global_chat = load_chat()
+total_messages = len(global_chat)
+
+if 'last_seen_messages' not in st.session_state:
+    st.session_state.last_seen_messages = total_messages
+
+# Calculate unread messages
+unread_count = total_messages - st.session_state.last_seen_messages
+chat_nav_label = f"Student Lounge (Chat) 🔴 {unread_count}" if unread_count > 0 else "Student Lounge (Chat)"
+
 
 # --- USER PROFILE (SIDEBAR) ---
 st.sidebar.title("🌿 Desprix 2.5")
@@ -140,7 +160,7 @@ st.sidebar.divider()
 # --- SIDEBAR NAVIGATION ---
 app_mode = st.sidebar.radio("Navigation:", 
     ["Home", "Find Remedy", "Drug Researcher (PRO)", "NAFDAC Verifier", 
-     "Exam Mastery Hub", "Structure Master Class", "Student Lounge (Chat)", "Leaderboard"])
+     "Exam Mastery Hub", "Structure Master Class", chat_nav_label, "Leaderboard"])
 
 # --- 0. HOME ---
 if app_mode == "Home":
@@ -347,37 +367,53 @@ elif app_mode == "Structure Master Class":
                     
                 except Exception as e:
                     st.error(f"Error fetching structure guide: {e}")
-        else:
+else:
             st.warning("Please type a structure name first!")
 
 # --- 6. STUDENT LOUNGE (LIVE CHAT) ---
-elif app_mode == "Student Lounge (Chat)":
-    st.markdown('<p class="pro-header">💬 Student Lounge</p>', unsafe_allow_html=True)
-    st.write("Chat with other pharmacy students globally! (Auto-updates every 3 seconds)")
+# We check "in app_mode" because the label changes dynamically with the unread badge
+elif "Student Lounge" in app_mode:
+    # Reset unread messages badge since user is viewing the chat
+    st.session_state.last_seen_messages = total_messages
     
-    # The @st.fragment decorator tells this specific block to reload every 3 seconds in the background!
+    st.markdown('<p class="pro-header">💬 Student Lounge</p>', unsafe_allow_html=True)
+    st.write("Chat with other pharmacy students globally! Tag users with @Nickname.")
+    
     @st.fragment(run_every=3)
     def live_chat_feed():
-        global_chat = load_chat()
+        current_chat = load_chat()
         chat_container = st.container(height=400)
         with chat_container:
-            for msg in global_chat:
-                st.markdown(f"""<div class="community-msg">
+            for msg in current_chat:
+                # Check if the current user was tagged
+                user_tag = f"@{username}"
+                is_tagged = username and user_tag.lower() in msg['text'].lower()
+                
+                css_class = "community-msg tagged-msg" if is_tagged else "community-msg"
+                
+                # Bold the tag in the text if it exists
+                display_text = msg['text']
+                if is_tagged:
+                    display_text = display_text.replace(user_tag, f'<span class="tagged-text">{user_tag}</span>')
+                
+                st.markdown(f"""
+                    <div class="{css_class}">
                         <div class="community-user">@{msg['user']}</div>
-                        <div class="community-text">{msg['text']}</div>
+                        <div class="community-text">{display_text}</div>
                     </div>
                 """, unsafe_allow_html=True)
 
-    # Call the live feed function
     live_chat_feed()
             
-    new_msg = st.chat_input("Send a message to the lounge...")
+    new_msg = st.chat_input("Type a message... Tag someone with @Nickname")
     
     if new_msg:
         if username:
-            global_chat = load_chat()
-            global_chat.append({"user": username, "text": new_msg})
-            save_chat(global_chat)
+            current_chat = load_chat()
+            current_chat.append({"user": username, "text": new_msg})
+            save_chat(current_chat)
+            # Update seen messages immediately so the badge doesn't light up for our own message
+            st.session_state.last_seen_messages = len(current_chat)
             st.rerun() 
         else:
             st.error("Please set a nickname in the sidebar to chat!")
@@ -402,4 +438,3 @@ elif app_mode == "Leaderboard":
 
 st.sidebar.divider()
 st.sidebar.caption(f"{st.session_state.current_user}'s Session | Desprix Crew ®2026")
-     
