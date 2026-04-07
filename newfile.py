@@ -371,7 +371,7 @@ else:
             st.warning("Please type a structure name first!")
 
 # --- 6. STUDENT LOUNGE (LIVE CHAT) ---
-# We check "in app_mode" because the label changes dynamically with the unread badge
+# We check "in app_mode" because the label changes dynamically with the unread badg.               
 elif "Student Lounge" in app_mode:
     # Reset unread messages badge since user is viewing the chat
     st.session_state.last_seen_messages = total_messages
