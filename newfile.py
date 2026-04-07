@@ -362,4 +362,27 @@ elif app_mode == "Student Lounge (Chat)":
     new_msg = st.chat_input("Send a message to the lounge...")
     if new_msg:
         if username:
-            st.session_state.community_chat.append({"u
+            st.session_state.community_chat.append({"user": username, "text": new_msg})
+            st.rerun()
+        else:
+            st.error("Please set a nickname in the sidebar to chat!")
+
+# --- 7. LEADERBOARD ---
+elif app_mode == "Leaderboard":
+    st.markdown('<p class="pro-header">🏆 Global Leaderboard</p>', unsafe_allow_html=True)
+    st.write("Scores update automatically when you complete the Daily Quiz in the Exam Mastery Hub.")
+    
+    sorted_lb = st.session_state.leaderboard.sort_values(by='Score', ascending=False).reset_index(drop=True)
+    
+    st.dataframe(
+        sorted_lb,
+        column_config={
+            "Name": st.column_config.TextColumn("Student Name", width="large"),
+            "Score": st.column_config.NumberColumn("Total XP", format="%d ⭐️")
+        },
+        hide_index=True,
+        use_container_width=True
+    )
+
+st.sidebar.divider()
+st.sidebar.caption(f"{st.session_state.current_user}'s Session | Desprix Crew ®2026")
