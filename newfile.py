@@ -372,7 +372,7 @@ elif app_mode == "Student Lounge (Chat)":
         if username:
             # SAVE TO GLOBAL CHAT
             global_chat.append({"user": username, "text": new_msg})
-  save_chat(global_chat)
+            save_chat(global_chat)
             st.rerun() # Refresh screen to show new message
         else:
             st.error("Please set a nickname in the sidebar to chat!")
