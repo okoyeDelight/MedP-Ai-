@@ -7,14 +7,16 @@ import os
 import datetime
 
 # --- MINI DATABASE SETUP ---
-# This creates local files to store global data across all users
 CHAT_DB = "global_chat.json"
 LEADERBOARD_DB = "global_leaderboard.json"
 
 def load_chat():
     if os.path.exists(CHAT_DB):
-        with open(CHAT_DB, "r") as f:
-            return json.load(f)
+        try:
+            with open(CHAT_DB, "r") as f:
+                return json.load(f)
+        except:
+            return []
     return [{"user": "System", "text": "Welcome to the Med AI Student Lounge! Discuss your CBTs and structural drawing tips here."}]
 
 def save_chat(chat_list):
@@ -23,8 +25,10 @@ def save_chat(chat_list):
 
 def load_leaderboard():
     if os.path.exists(LEADERBOARD_DB):
-        df = pd.read_json(LEADERBOARD_DB)
-        return df
+        try:
+            return pd.read_json(LEADERBOARD_DB)
+        except:
+            pass
     return pd.DataFrame([["Prof. Chuks", 150], ["Ada Rx", 120]], columns=['Name', 'Score'])
 
 def save_leaderboard(df):
@@ -157,7 +161,7 @@ if app_mode == "Home":
     col1, col2, col3 = st.columns([1, 4, 1])
     with col2:
         if st.button("✨ Verify a NAFDAC Number"): quick_query = "What is the official procedure to verify a NAFDAC registration number in Nigeria?"
-        if st.button("✨ Explain a Drug Mechanism"): quick_query = "Explain the mechanism of action of ACE Inhibitors simply."
+        if st.button("✨ Explain a Drug Mechanism"): quick_query = "Explain the mechanism of action of ACE Inhibitors using very simple terms, everyday analogies, and a little bit of Nigerian Pidgin."
         if st.button("✨ Help me with CBT Prep"): quick_query = "Give me 3 quick pharmacy pharmacology multiple choice questions with answers."
 
     st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
@@ -182,7 +186,8 @@ elif app_mode == "Find Remedy":
     if st.button("Search Remedy", type="primary"):
         try:
             model = genai.GenerativeModel('models/gemini-2.5-flash')
-            resp = model.generate_content(f"Pharmacist: Remedy for {u_input} with Pidgin summary.")
+            prompt = f"Act as a friendly Nigerian pharmacist. Give a practical remedy for {u_input} in very simple English, and then provide a short, funny summary in Nigerian Pidgin."
+            resp = model.generate_content(prompt)
             st.markdown(resp.text)
         except Exception as e: st.error(f"Error: {e}")
 
@@ -192,7 +197,7 @@ elif app_mode == "Drug Researcher (PRO)":
     drug = st.text_input("Enter Drug Name:")
     if st.button("Analyze API", type="primary"):
         model = genai.GenerativeModel('models/gemini-2.5-flash')
-        prompt = f"Pharmacologist: Deep breakdown of {drug} (API, Mechanism, Generics, Side effects)."
+        prompt = f"Pharmacologist: Deep breakdown of {drug} (API, Mechanism, Generics, Side effects). Explain it so a 200-level pharmacy student understands it perfectly."
         resp = model.generate_content(prompt)
         st.success(resp.text)
 
@@ -242,7 +247,6 @@ elif app_mode == "Exam Mastery Hub":
                         st.session_state.daily_score += 10
                         st.session_state.quiz_completed_today = True
                         
-                        # LOAD GLOBAL LEADERBOARD, UPDATE, AND SAVE
                         global_lb = load_leaderboard()
                         if username in global_lb['Name'].values:
                             global_lb.loc[global_lb['Name'] == username, 'Score'] += 10
@@ -269,7 +273,7 @@ elif app_mode == "Exam Mastery Hub":
                         model = genai.GenerativeModel('models/gemini-2.5-flash')
                         aud_bytes = aud.read()
                         m_type = "audio/mp4" if aud.name.endswith("m4a") else f"audio/{aud.type.split('/')[-1]}"
-                        prompt = "Compare the audio to the handout. Find what the lecturer emphasized. Give a summary of the most important points, and provide 3 likely exam questions based on this emphasis."
+                        prompt = "Compare the audio to the handout. Find what the lecturer emphasized. Give a summary of the most important points in simple English, provide 3 likely exam questions, and end with a 'Street/Pidgin Summary' so the student never forgets it."
                         resp = model.generate_content([prompt, {"mime_type": m_type, "data": aud_bytes}])
                         st.markdown(resp.text)
                     except Exception as e: st.error(f"Error: {e}")
@@ -326,14 +330,12 @@ elif app_mode == "Structure Master Class":
                 try:
                     model = genai.GenerativeModel('models/gemini-2.5-flash')
                     prompt = f"""
-                    You are a master pharmacy chemistry tutor. The student needs to learn how to draw the chemical structure of '{struct_query}'.
+                    You are a brilliant but relatable Nigerian pharmacy student teaching a junior colleague how to draw '{struct_query}'.
                     
                     Format your response exactly like this:
-                    **Introduction:** Briefly explain what this structure is and where it is found.
-                    
-                    **The Cheat:** Provide a highly visual, easy-to-remember mnemonic or step-by-step physical guide on how to draw it from scratch.
-                    
-                    **Key Features:** List the essential functional groups, atoms, or numbering rules they must not forget.
+                    **Introduction:** Briefly explain what this is simply.
+                    **The Cheat:** Provide a highly visual, easy-to-remember mnemonic or step-by-step physical guide (like 'draw a house and attach a hexagon'). Use simple, everyday terms.
+                    **Key Features:** List what they must not forget. Include one sentence of encouragement in Nigerian Pidgin at the end.
                     """
                     resp = model.generate_content(prompt)
                     
@@ -348,45 +350,43 @@ elif app_mode == "Structure Master Class":
         else:
             st.warning("Please type a structure name first!")
 
-# --- 6. STUDENT LOUNGE (GLOBAL CHAT) ---
+# --- 6. STUDENT LOUNGE (LIVE CHAT) ---
 elif app_mode == "Student Lounge (Chat)":
     st.markdown('<p class="pro-header">💬 Student Lounge</p>', unsafe_allow_html=True)
-    st.write("Chat with other pharmacy students globally!")
+    st.write("Chat with other pharmacy students globally! (Auto-updates every 3 seconds)")
     
-    # LOAD GLOBAL CHAT
-    global_chat = load_chat()
-    
-    chat_container = st.container(height=400)
-    with chat_container:
-        for msg in global_chat:
-            st.markdown(f"""
-                <div class="community-msg">
-                    <div class="community-user">@{msg['user']}</div>
-                    <div class="community-text">{msg['text']}</div>
-                </div>
-            """, unsafe_allow_html=True)
+    # The @st.fragment decorator tells this specific block to reload every 3 seconds in the background!
+    @st.fragment(run_every=3)
+    def live_chat_feed():
+        global_chat = load_chat()
+        chat_container = st.container(height=400)
+        with chat_container:
+            for msg in global_chat:
+                st.markdown(f"""<div class="community-msg">
+                        <div class="community-user">@{msg['user']}</div>
+                        <div class="community-text">{msg['text']}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+    # Call the live feed function
+    live_chat_feed()
             
     new_msg = st.chat_input("Send a message to the lounge...")
     
     if new_msg:
         if username:
-            # SAVE TO GLOBAL CHAT
+            global_chat = load_chat()
             global_chat.append({"user": username, "text": new_msg})
             save_chat(global_chat)
-            st.rerun() # Refresh screen to show new message
+            st.rerun() 
         else:
             st.error("Please set a nickname in the sidebar to chat!")
 
-    # Auto-refresh button (since Streamlit doesn't auto-pull without interaction)
-    if st.button("🔄 Refresh Chat"):
-        st.rerun()
-
-# --- 7. LEADERBOARD (GLOBAL) ---
+# --- 7. LEADERBOARD ---
 elif app_mode == "Leaderboard":
     st.markdown('<p class="pro-header">🏆 Global Leaderboard</p>', unsafe_allow_html=True)
     st.write("Scores update automatically when you complete the Daily Quiz in the Exam Mastery Hub.")
     
-    # LOAD GLOBAL LEADERBOARD
     global_lb = load_leaderboard()
     sorted_lb = global_lb.sort_values(by='Score', ascending=False).reset_index(drop=True)
     
@@ -402,3 +402,4 @@ elif app_mode == "Leaderboard":
 
 st.sidebar.divider()
 st.sidebar.caption(f"{st.session_state.current_user}'s Session | Desprix Crew ®2026")
+     
