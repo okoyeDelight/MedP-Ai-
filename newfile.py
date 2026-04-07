@@ -368,9 +368,9 @@ if app_mode == "Structure Master Class":
                             {resp.text}
                         </div>
                     """, unsafe_allow_html=True)
-         except Exception as e:
+               except Exception as e:
                     st.error(f"Error fetching structure guide: {e}")
-        else:
+               else:
             st.warning("Please type a structure name first!")
 
 # --- 6. STUDENT LOUNGE (LIVE CHAT) ---
