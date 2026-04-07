@@ -162,6 +162,10 @@ app_mode = st.sidebar.radio("Navigation:",
     ["Home", "Find Remedy", "Drug Researcher (PRO)", "NAFDAC Verifier", 
      "Exam Mastery Hub", "Structure Master Class", chat_nav_label, "Leaderboard"])
 
+# ==========================================
+# BULLETPROOF ROUTING: INDEPENDENT IF BLOCKS
+# ==========================================
+
 # --- 0. HOME ---
 if app_mode == "Home":
     st.markdown('<div class="app-menu-icon">⋮</div>', unsafe_allow_html=True)
@@ -200,7 +204,7 @@ if app_mode == "Home":
                 st.error(f"Connection Error: {e}. Check your API Key or Network.")
 
 # --- 1. FIND REMEDY ---
-elif app_mode == "Find Remedy":
+if app_mode == "Find Remedy":
     st.markdown('<p class="pro-header">🌿 Herbal Remedy Guide</p>', unsafe_allow_html=True)
     u_input = st.text_input("What is the symptom?", placeholder="e.g. Fever, Malaria")
     if st.button("Search Remedy", type="primary"):
@@ -212,7 +216,7 @@ elif app_mode == "Find Remedy":
         except Exception as e: st.error(f"Error: {e}")
 
 # --- 2. DRUG RESEARCHER (PRO) ---
-elif app_mode == "Drug Researcher (PRO)":
+if app_mode == "Drug Researcher (PRO)":
     st.markdown('<p class="pro-header">🧪 Drug Research & API</p>', unsafe_allow_html=True)
     drug = st.text_input("Enter Drug Name:")
     if st.button("Analyze API", type="primary"):
@@ -222,7 +226,7 @@ elif app_mode == "Drug Researcher (PRO)":
         st.success(resp.text)
 
 # --- 3. NAFDAC VERIFIER ---
-elif app_mode == "NAFDAC Verifier":
+if app_mode == "NAFDAC Verifier":
     st.markdown('<p class="pro-header">🔍 Live NAFDAC Verifier</p>', unsafe_allow_html=True)
     reg = st.text_input("Enter NAFDAC Reg No:")
     if st.button("Verify Registration", type="primary"):
@@ -233,7 +237,7 @@ elif app_mode == "NAFDAC Verifier":
         except Exception as e: st.error(f"Search Error: {e}")
 
 # --- 4. EXAM MASTERY HUB (DAILY QUIZ & CBT MAKER) ---
-elif app_mode == "Exam Mastery Hub":
+if app_mode == "Exam Mastery Hub":
     st.markdown('<p class="pro-header">🎓 Exam Mastery Hub</p>', unsafe_allow_html=True)
     tab1, tab2, tab3 = st.tabs(["📅 Daily Quiz", "🎤 Lecture Analyst", "📝 Note-to-CBT"])
 
@@ -338,7 +342,7 @@ elif app_mode == "Exam Mastery Hub":
                 st.rerun()
 
 # --- 5. STRUCTURE MASTER CLASS ---
-elif app_mode == "Structure Master Class":
+if app_mode == "Structure Master Class":
     st.markdown('<p class="pro-header">🎨 Dynamic Structure Cheats</p>', unsafe_allow_html=True)
     st.write("Search for any drug, nucleus, or chemical structure to learn the easiest way to draw it.")
     
@@ -364,15 +368,13 @@ elif app_mode == "Structure Master Class":
                             {resp.text}
                         </div>
                     """, unsafe_allow_html=True)
-                    
-                except Exception as e:
+         except Exception as e:
                     st.error(f"Error fetching structure guide: {e}")
-else:
+        else:
             st.warning("Please type a structure name first!")
 
 # --- 6. STUDENT LOUNGE (LIVE CHAT) ---
-# We check "in app_mode" because the label changes dynamically with the unread badg.               
-elif "Student Lounge" in app_mode:
+if "Student Lounge" in app_mode:
     # Reset unread messages badge since user is viewing the chat
     st.session_state.last_seen_messages = total_messages
     
@@ -385,13 +387,11 @@ elif "Student Lounge" in app_mode:
         chat_container = st.container(height=400)
         with chat_container:
             for msg in current_chat:
-                # Check if the current user was tagged
                 user_tag = f"@{username}"
                 is_tagged = username and user_tag.lower() in msg['text'].lower()
                 
                 css_class = "community-msg tagged-msg" if is_tagged else "community-msg"
                 
-                # Bold the tag in the text if it exists
                 display_text = msg['text']
                 if is_tagged:
                     display_text = display_text.replace(user_tag, f'<span class="tagged-text">{user_tag}</span>')
@@ -412,14 +412,13 @@ elif "Student Lounge" in app_mode:
             current_chat = load_chat()
             current_chat.append({"user": username, "text": new_msg})
             save_chat(current_chat)
-            # Update seen messages immediately so the badge doesn't light up for our own message
             st.session_state.last_seen_messages = len(current_chat)
             st.rerun() 
         else:
             st.error("Please set a nickname in the sidebar to chat!")
 
 # --- 7. LEADERBOARD ---
-elif app_mode == "Leaderboard":
+if app_mode == "Leaderboard":
     st.markdown('<p class="pro-header">🏆 Global Leaderboard</p>', unsafe_allow_html=True)
     st.write("Scores update automatically when you complete the Daily Quiz in the Exam Mastery Hub.")
     
