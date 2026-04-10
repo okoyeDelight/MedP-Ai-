@@ -752,19 +752,18 @@ if app_mode == "🌿 Vendor Hub":
 
     tab1, tab2 = st.tabs(["🛒 Buy Items", "➕ Sell Something"])
 
-    with tab1:
+            with tab1:
         approved_items = load_approved_products()
         if not approved_items:
             st.info("The market is empty. Be the first to list a textbook or lab coat!")
         else:
             for i, item in enumerate(approved_items):
                 with st.container():
-                    # Logic to handle if there is an image
                     img_html = ""
                     if item.get("image"):
                         img_html = f'<img src="data:image/jpeg;base64,{item["image"]}" style="width:100%; border-radius:10px; margin-bottom:10px;">'
                     
-                                        st.markdown(f"""
+                    st.markdown(f"""
                     <div class="glass-container" style="margin-bottom: 15px; border: 1px solid #3b82f655; padding: 10px; border-radius: 12px;">
                         {img_html}
                         <h4 style="color: #3b82f6; margin-bottom: 5px;">{item['name']}</h4>
@@ -772,15 +771,13 @@ if app_mode == "🌿 Vendor Hub":
                         <p style="font-size: 0.85rem; opacity: 0.8;"><b>Condition:</b> {item['dosage_form']} | <b>Seller:</b> @{item['vendor']}</p>
                         <p style="font-size: 0.9rem; margin-top: 5px;">{item['treats']}</p>
                     </div>
-                    """, unsafe_allow_html=True) # <--- MAKE SURE THIS LINE IS EXACTLY LIKE THIS
-
+                    """, unsafe_allow_html=True)
                     
-                    # Contact Logic (Now correctly pushed inside the container)
                     wa_phone = item.get('link', '').replace('+', '').replace(' ', '')
                     if st.button(f"💬 Chat with @{item['vendor']}", key=f"buy_{i}"):
                         msg = f"Hello, I am interested in your {item['name']} on Desprix Med AI."
                         st.markdown(f'<meta http-equiv="refresh" content="0; url=https://wa.me/{wa_phone}?text={msg}">', unsafe_allow_html=True)
-
+                
     with tab2:
         st.subheader("List Your Item")
         if not user_data.get('phone'):
