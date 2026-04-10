@@ -69,25 +69,34 @@ try:
 except KeyError:
     st.error("⚠️ GEMINI_API_KEY is missing! Please add it to your Streamlit secrets.")
 
-st.set_page_config(page_title="Desprix Med AI", page_icon="🌿", layout="centered")
+st.set_page_config(page_title="Desprix Med AI", page_icon="💊", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CSS: ULTIMATE PREMIUM UI (WHITE BORDER FIX INCLUDED) ---
+# --- CSS: CROSS-DEVICE COMPATIBILITY ---
 st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&display=swap');
-
-    /* UI FIX: KILL THE WHITE BORDER & DEFAULT STREAMLIT HEADERS */
-    header {display: none !important;}
-    #MainMenu {display: none !important;}
-    footer {display: none !important;}
-    .block-container {padding-top: 1rem !important; padding-bottom: 1rem !important; margin-top: 0 !important;}
-    [data-testid="stHeader"] {display: none !important;}
-
-    ::-webkit-scrollbar { width: 0px; background: transparent; } html { scrollbar-width: none; -ms-overflow-style: none; }
-
-    p, h1, h2, h3, h4, h5, h6, div.stMarkdown, .stButton>button, .stTextInput input, .stChatInput textarea, .stTextArea textarea {
-        font-family: 'Poppins', sans-serif !important;
+<style>
+    /* Ensure the 3-line menu is visible on ALL mobile browsers */
+    header[data-testid="stHeader"] {
+        visibility: visible !important;
+        display: block !important;
     }
+
+    /* Professional Button Styling */
+    button[kind="header"] {
+        background-color: #3b82f6 !important; /* UNIZIK Blue / Med Blue */
+        color: white !important;
+        border: 1.5px solid #ffffff !important; /* The White Border */
+        border-radius: 8px !important;
+        box-shadow: 0px 2px 5px rgba(0,0,0,0.3) !important;
+        margin-left: 10px !important;
+    }
+
+    /* Clean up the rest of the UI */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .block-container {padding-top: 2rem !important;}
+</style>
+""", unsafe_allow_html=True)
+
 
     [data-testid="stAppViewContainer"] { background-color: #0b0f19; color: #f8fafc; }
     [data-testid="stSidebar"] { background-color: #111827; border-right: 1px solid #1f2937; }
