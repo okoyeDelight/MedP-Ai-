@@ -30,7 +30,7 @@ def save_chat(data): save_json(CHAT_DB, data)
 
 def load_users():
     return load_json(USERS_DB, {
-        "AdminAyo": {
+        "MED AI": {
             "password": "Desprix07!", "score": 100, "avatar": None,
             "bio": "Founder of Desprix", "school": "UNIZIK", 
             "level": "200L", "course": "Pharmacy", "phone": "08000000000",
@@ -230,11 +230,11 @@ chat_nav_label = f"Student Lounge (Chat) 🔴 {unread_count}" if unread_count > 
 
 nav_options = ["Home", "My Profile", "Find Remedy", "Drug Researcher (PRO)", "NAFDAC Verifier", "Exam Mastery Hub", "Structure Master Class", chat_nav_label, "Leaderboard", "🌿 Vendor Hub"]
 
-if username == "AdminAyo":
+if username == "MED AI":
     nav_options.append("👑 Admin Dashboard")
 
 # THE GATEKEEPER: Unlocks the door for you
-if username == "AdminAyo" and user_data.get('password') == "Desprix07!":
+if username == "MED AI" and user_data.get('password') == "Desprix07!":
     modes.insert(0, "🛡️ Admin Dashboard")
 
 app_mode = st.sidebar.selectbox("Navigate", nav_options)
