@@ -780,11 +780,11 @@ if app_mode == "🌿 Vendor Hub":
     </div>""", unsafe_allow_html=True)
 
                     
-                                        # The Safe WhatsApp Link
-                    wa_phone = item.get('link', '').replace('+', '').replace(' ', '')
-                    msg = f"Hello, I am interested in your {item['name']} on Desprix Med AI."
+    # The Safe WhatsApp Link
+    wa_phone = item.get('link', '').replace('+', '').replace(' ', '')
+    msg = f"Hello, I am interested in your {item['name']} on Desprix Med AI."
                     
-                    st.link_button(f"💬 Chat with @{item['vendor']}", f"https://wa.me/{wa_phone}?text={msg}", use_container_width=True)
+    st.link_button(f"💬 Chat with @{item['vendor']}", f"https://wa.me/{wa_phone}?text={msg}", use_container_width=True)
                     
                 
     with tab2:
