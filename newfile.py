@@ -777,12 +777,14 @@ if app_mode == "🌿 Vendor Hub":
 <p style="font-size: 0.9rem; margin-top: 5px;">{item['treats']}</p>
     </div>""", unsafe_allow_html=True)
 
-                    
-    # The Safe WhatsApp Link
-    wa_phone = item.get('link', '').replace('+', '').replace(' ', '')
+    raw_phone = item.get('link', '').replace('+', '').replace(' ', '')
+    if raw_phone.startswith('0'):
+    wa_phone = "234" + raw_phone[1:]
+    else:
+    wa_phone = raw_phone
     msg = f"Hello, I am interested in your {item['name']} on Desprix Med AI."
-                    
     st.link_button(f"💬 Chat with @{item['vendor']}", f"https://wa.me/{wa_phone}?text={msg}", use_container_width=True)
+
                     
                 
     with tab2:
