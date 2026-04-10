@@ -752,7 +752,7 @@ if app_mode == "🌿 Vendor Hub":
 
     tab1, tab2 = st.tabs(["🛒 Buy Items", "➕ Sell Something"])
 
-            with tab1:
+    with tab1:
         approved_items = load_approved_products()
         if not approved_items:
             st.info("The market is empty. Be the first to list a textbook or lab coat!")
