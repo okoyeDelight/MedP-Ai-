@@ -686,4 +686,4 @@ if app_mode == "Leaderboard":
 st.sidebar.divider()
 st.sidebar.caption(f"{username}'s Secured Session | Desprix Crew ®2026")
 
-# --- END OF FILE ---
+
