@@ -195,13 +195,20 @@ else:
     st.sidebar.markdown(f'<div style="width: 80px; height: 80px; border-radius: 50%; background-color: #1e293b; display: flex; align-items: center; justify-content: center; border: 2px solid #3b82f6; margin-bottom: 10px; font-size: 30px; font-weight: bold; color: white; margin-left: auto; margin-right: auto;">{username[0].upper()}</div>', unsafe_allow_html=True)
 
 pic_upload = st.sidebar.file_uploader("Change Picture", type=['png', 'jpg', 'jpeg'], label_visibility="collapsed")
+
 if pic_upload:
-    encoded_img = base64.b64encode(pic_upload.read()).decode('utf-8')
-    users_db = load_users()
-    users_db[username]["avatar"] = encoded_img
-    save_users(users_db)
-    st.toast("Picture updated! ✅")
-    st.rerun()
+    # This button stops the "Rerun Loop" by making the save action manual
+    if st.sidebar.button("💾 Confirm New Picture", use_container_width=True):
+        encoded_img = base64.b64encode(pic_upload.read()).decode('utf-8')
+        
+        # Fresh load to stay in sync
+        users_db = load_users()
+        users_db[username]["avatar"] = encoded_img
+        save_users(users_db)
+        
+        st.toast("Profile updated! 🌟")
+        time.sleep(1)
+        st.rerun()
 
 st.sidebar.markdown(f"<div style='text-align: center;'><strong>XP:</strong> {user_data['score']} ⭐️</div>", unsafe_allow_html=True)
 
