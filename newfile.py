@@ -541,7 +541,7 @@ if app_mode == "Exam Mastery Hub":
         if cbt_note and quiz_title:
             if st.button("Generate & Save CBT", type="primary"):
                 log_user_history(username, f"Generated CBT: {quiz_title}")
-                                with st.spinner("Building your quiz..."):
+                with st.spinner("Building your quiz..."):
                     try:
                         model = genai.GenerativeModel('models/gemini-2.5-flash')
                         mime_type = "application/pdf" if cbt_note.name.endswith('pdf') else f"image/{cbt_note.name.split('.')[-1]}"
