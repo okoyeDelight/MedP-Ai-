@@ -262,7 +262,7 @@ if app_mode == "My Profile":
             st.rerun()
 
 # --- 👑 ADMIN DASHBOARD ---
-if app_mode == "👑 Admin Dashboard" and username == "AdminAyo":
+if app_mode == "👑 Admin Dashboard" and username == "MED AI":
     st.markdown('<p class="pro-header">👑 Admin Command Center</p>', unsafe_allow_html=True)
     admin_list = []
     for u, d in users_db.items():
