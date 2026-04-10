@@ -203,24 +203,102 @@ with st.sidebar.expander("📜 My History"):
     if len(user_data["history"]) == 0: st.write("No history yet.")
     else:
         for item in user_data["history"]: st.caption(item)
+# --- SIDEBAR & MAIN AUTHENTICATION SYSTEM ---
+st.sidebar.title("🌿 Desprix 2.5")
+users_db = load_users()
+
+# CHECK FOR "REMEMBER ME" (Auto-login from URL)
+query_params = st.query_params
+if "user" in query_params and not st.session_state.get('logged_in_user'):
+    saved_user = query_params["user"]
+    if saved_user in users_db:
+        st.session_state.logged_in_user = saved_user
+
+# MAIN PAGE LOGIN (If not logged in)
+if not st.session_state.get('logged_in_user'):
+    st.markdown('<div class="glass-container" style="text-align: center;">', unsafe_allow_html=True)
+    st.markdown("### 🔐 Secure Student Access")
+    st.write("Login or Sign Up to unlock Med AI features and save your progress.")
+    
+    auth_mode = st.radio("Choose Action", ["Login", "Sign Up"], horizontal=True, label_visibility="collapsed")
+    auth_user = st.text_input("Nickname", placeholder="Enter your nickname...")
+    auth_pass = st.text_input("Password", type="password", placeholder="Enter your password...")
+    remember_me = st.checkbox("Remember Me on this device")
+    
+    if st.button("Access Med AI", type="primary"):
+        if auth_user and auth_pass:
+            if auth_mode == "Sign Up":
+                if auth_user in users_db:
+                    st.error("Nickname taken! Choose another or log in.")
+                else:
+                    users_db[auth_user] = {"password": auth_pass, "score": 0, "history": [], "avatar": None, "saved_cbt": [], "saved_theory": []}
+                    save_users(users_db)
+                    st.session_state.logged_in_user = auth_user
+                    if remember_me:
+                        st.query_params["user"] = auth_user
+                    st.toast(f"Welcome {auth_user}! 🎉")
+                    st.rerun()
+            elif auth_mode == "Login":
+                if auth_user in users_db and users_db[auth_user]["password"] == auth_pass:
+                    st.session_state.logged_in_user = auth_user
+                    if remember_me:
+                        st.query_params["user"] = auth_user
+                    st.toast("Welcome back! 🚀")
+                    st.rerun()
+                else:
+                    st.error("Invalid Nickname or Password.")
+        else:
+            st.warning("Please fill in both fields.")
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.stop() 
+
+# --- USER IS LOGGED IN past this point ---
+username = st.session_state.logged_in_user
+user_data = users_db[username]
+
+# Ensure lists exist for saved materials
+if "saved_cbt" not in user_data: user_data["saved_cbt"] = []
+if "saved_theory" not in user_data: user_data["saved_theory"] = []
+
+st.sidebar.markdown(f"### 👤 Profile: @{username}")
+
+# Profile Picture Logic
+avatar_base64 = user_data.get("avatar")
+if avatar_base64:
+    st.sidebar.markdown(f'<img src="data:image/jpeg;base64,{avatar_base64}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">', unsafe_allow_html=True)
+else:
+    st.sidebar.markdown(f'<div style="width: 80px; height: 80px; border-radius: 50%; background-color: #1e293b; display: flex; align-items: center; justify-content: center; border: 2px solid #3b82f6; margin-bottom: 10px; font-size: 30px; font-weight: bold; color: white; margin-left: auto; margin-right: auto;">{username[0].upper()}</div>', unsafe_allow_html=True)
+
+pic_upload = st.sidebar.file_uploader("Change Picture", type=['png', 'jpg', 'jpeg'], label_visibility="collapsed")
+if pic_upload:
+    encoded_img = base64.b64encode(pic_upload.read()).decode('utf-8')
+    users_db = load_users()
+    users_db[username]["avatar"] = encoded_img
+    save_users(users_db)
+    st.toast("Picture updated! ✅")
+    st.rerun()
+
+st.sidebar.markdown(f"<div style='text-align: center;'><strong>XP:</strong> {user_data['score']} ⭐️</div>", unsafe_allow_html=True)
 
 if st.sidebar.button("Log Out"):
     st.session_state.logged_in_user = None
+    st.query_params.clear()
     st.rerun()
 
 st.sidebar.divider()
 
+# Calculate Chat Notifications
 unread_count = total_messages - st.session_state.last_seen_messages
 chat_nav_label = f"Student Lounge (Chat) 🔴 {unread_count}" if unread_count > 0 else "Student Lounge (Chat)"
 
 nav_options = ["Home", "Find Remedy", "Drug Researcher (PRO)", "NAFDAC Verifier", 
                "Exam Mastery Hub", "Structure Master Class", chat_nav_label, "Leaderboard", "🌿 Vendor Hub"]
 
-# Secret Admin Dashboard
 if username == "AdminAyo":
     nav_options.append("👑 Admin Dashboard")
 
 app_mode = st.sidebar.radio("Navigation:", nav_options)
+
                         # ==========================================
 # APP SECTIONS
 # ==========================================
