@@ -764,15 +764,16 @@ if app_mode == "🌿 Vendor Hub":
                     if item.get("image"):
                         img_html = f'<img src="data:image/jpeg;base64,{item["image"]}" style="width:100%; border-radius:10px; margin-bottom:10px;">'
                     
-                    st.markdown(f"""
-                    <div class="glass-container" style="margin-bottom: 15px;">
+                                        st.markdown(f"""
+                    <div class="glass-container" style="margin-bottom: 15px; border: 1px solid #3b82f655; padding: 10px; border-radius: 12px;">
                         {img_html}
-                        <h4 style="color: #3b82f6;">{item['name']}</h4>
-                        <p style="font-size: 1.2rem; font-weight: bold; color: #10b981;">₦{item['price']}</p>
-                        <p style="opacity: 0.8;"><b>Condition:</b> {item['dosage_form']} | <b>Seller:</b> @{item['vendor']}</p>
-                        <p>{item['treats']}</p>
+                        <h4 style="color: #3b82f6; margin-bottom: 5px;">{item['name']}</h4>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #10b981; margin: 0;">₦{item['price']}</p>
+                        <p style="font-size: 0.85rem; opacity: 0.8;"><b>Condition:</b> {item['dosage_form']} | <b>Seller:</b> @{item['vendor']}</p>
+                        <p style="font-size: 0.9rem; margin-top: 5px;">{item['treats']}</p>
                     </div>
-                    """, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True) # <--- MAKE SURE THIS LINE IS EXACTLY LIKE THIS
+
                     
                     # Contact Logic (Now correctly pushed inside the container)
                     wa_phone = item.get('link', '').replace('+', '').replace(' ', '')
