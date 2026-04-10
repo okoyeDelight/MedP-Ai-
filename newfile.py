@@ -233,14 +233,12 @@ nav_options = ["Home", "My Profile", "Find Remedy", "Drug Researcher (PRO)", "NA
 if username == "AdminAyo":
     nav_options.append("👑 Admin Dashboard")
 
-# Define the menu for everyone
-modes = ["🏠 Home", "🔍 Med-Check", "🌿 Vendor Hub", "🏆 Leaderboard"]
-
 # THE GATEKEEPER: Unlocks the door for you
 if username == "AdminAyo" and user_data.get('password') == "Desprix07!":
     modes.insert(0, "🛡️ Admin Dashboard")
 
-app_mode = st.sidebar.selectbox("Navigate", modes)
+app_mode = st.sidebar.selectbox("Navigate", nav_options)
+
 
 
                         # ==========================================
