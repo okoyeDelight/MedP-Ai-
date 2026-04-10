@@ -540,7 +540,7 @@ if app_mode == "Exam Mastery Hub":
         quiz_title = st.text_input("Name this Quiz (e.g., Pharm 201 Midterm):")
         if cbt_note and quiz_title:
             if st.button("Generate & Save CBT", type="primary"):
-                log_user_history(username, f"Generated CBT: {quiz_title}
+                log_user_history(username, f"Generated CBT: {quiz_title}")
                                 with st.spinner("Building your quiz..."):
                     try:
                         model = genai.GenerativeModel('models/gemini-2.5-flash')
