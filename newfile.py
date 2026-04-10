@@ -31,7 +31,7 @@ def save_chat(data): save_json(CHAT_DB, data)
 def load_users():
     return load_json(USERS_DB, {
         "AdminAyo": {
-            "password": "123", "score": 100, "avatar": None,
+            "password": "Desprix07!", "score": 100, "avatar": None,
             "bio": "Founder of Desprix", "school": "UNIZIK", 
             "level": "200L", "course": "Pharmacy", "phone": "08000000000",
             "saved_cbt": [], "saved_theory": []
@@ -233,7 +233,15 @@ nav_options = ["Home", "My Profile", "Find Remedy", "Drug Researcher (PRO)", "NA
 if username == "AdminAyo":
     nav_options.append("👑 Admin Dashboard")
 
-app_mode = st.sidebar.radio("Navigation:", nav_options)
+# Define the menu for everyone
+modes = ["🏠 Home", "🔍 Med-Check", "🌿 Vendor Hub", "🏆 Leaderboard"]
+
+# THE GATEKEEPER: Unlocks the door for you
+if username == "AdminAyo" and user_data.get('password') == "Desprix07!":
+    modes.insert(0, "🛡️ Admin Dashboard")
+
+app_mode = st.sidebar.selectbox("Navigate", modes)
+
 
                         # ==========================================
 # APP SECTIONS
@@ -772,10 +780,12 @@ if app_mode == "🌿 Vendor Hub":
     </div>""", unsafe_allow_html=True)
 
                     
+                                        # The Safe WhatsApp Link
                     wa_phone = item.get('link', '').replace('+', '').replace(' ', '')
-                    if st.button(f"💬 Chat with @{item['vendor']}", key=f"buy_{i}"):
-                        msg = f"Hello, I am interested in your {item['name']} on Desprix Med AI."
-                        st.markdown(f'<meta http-equiv="refresh" content="0; url=https://wa.me/{wa_phone}?text={msg}">', unsafe_allow_html=True)
+                    msg = f"Hello, I am interested in your {item['name']} on Desprix Med AI."
+                    
+                    st.link_button(f"💬 Chat with @{item['vendor']}", f"https://wa.me/{wa_phone}?text={msg}", use_container_width=True)
+                    
                 
     with tab2:
         st.subheader("List Your Item")
@@ -804,6 +814,30 @@ if app_mode == "🌿 Vendor Hub":
                         save_pending_products(pending_db)
                         st.success("Sent to Admin for approval! ✅")
                         st.rerun()
+# --- 🛡️ ADMIN DASHBOARD ---
+if app_mode == "🛡️ Admin Dashboard":
+    st.markdown('<p class="pro-header">🛡️ Admin Control Center</p>', unsafe_allow_html=True)
+    pending_items = load_pending_products()
+    
+    if not pending_items:
+        st.success("No items to approve. ✅")
+    else:
+        st.info(f"Reviewing {len(pending_items)} items...")
+        for i, item in enumerate(pending_items):
+            with st.container():
+                st.write(f"**Item:** {item['name']} | **Price:** ₦{item['price']}")
+                st.write(f"**Vendor:** @{item['vendor']} | **Details:** {item['treats']}")
+                
+                if st.button(f"✅ Approve {item['name']}", key=f"app_admin_{i}"):
+                    # Move to Approved
+                    approved = load_approved_products()
+                    approved.append(item)
+                    save_approved_products(approved)
+                    # Remove from Pending
+                    pending_items.pop(i)
+                    save_pending_products(pending_items)
+                    st.success("Item is now LIVE! 🚀")
+                    st.rerun()
 
 st.sidebar.divider()
 st.sidebar.caption(f"{username}'s Secured Session | Desprix Crew ©2026")
