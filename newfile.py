@@ -28,11 +28,16 @@ def save_json(file_path, data):
 def load_chat(): return load_json(CHAT_DB, [{"user": "System", "text": "Welcome to the Lounge!"}])
 def save_chat(data): save_json(CHAT_DB, data)
 
-def load_users(): 
+def load_users():
     return load_json(USERS_DB, {
-        "Prof. Chuks": {"password": "123", "score": 150, "history": [], "avatar": None, "saved_cbt": [], "saved_theory": []},
-        "Ada Rx": {"password": "123", "score": 120, "history": [], "avatar": None, "saved_cbt": [], "saved_theory": []}
+        "AdminAyo": {
+            "password": "123", "score": 100, "avatar": None,
+            "bio": "Founder of Desprix", "school": "UNIZIK", 
+            "level": "200L", "course": "Pharmacy", "phone": "08000000000",
+            "saved_cbt": [], "saved_theory": []
+        }
     })
+    
 def save_users(data): save_json(USERS_DB, data)
 
 def load_pending_products(): return load_json(PENDING_PRODUCTS_DB, [])
@@ -223,8 +228,7 @@ st.sidebar.divider()
 unread_count = total_messages - st.session_state.last_seen_messages
 chat_nav_label = f"Student Lounge (Chat) 🔴 {unread_count}" if unread_count > 0 else "Student Lounge (Chat)"
 
-nav_options = ["Home", "Find Remedy", "Drug Researcher (PRO)", "NAFDAC Verifier", 
-               "Exam Mastery Hub", "Structure Master Class", chat_nav_label, "Leaderboard", "🌿 Vendor Hub"]
+nav_options = ["Home", "My Profile", "Find Remedy", "Drug Researcher (PRO)", "NAFDAC Verifier", "Exam Mastery Hub", "Structure Master Class", chat_nav_label, "Leaderboard", "🌿 Vendor Hub"]
 
 if username == "AdminAyo":
     nav_options.append("👑 Admin Dashboard")
@@ -234,7 +238,55 @@ app_mode = st.sidebar.radio("Navigation:", nav_options)
                         # ==========================================
 # APP SECTIONS
 # ==========================================
+# --- MY PROFILE SECTION ---
+if app_mode == "My Profile":
+    st.markdown('<p class="pro-header">👤 Student Profile</p>', unsafe_allow_html=True)
+    with st.expander("📝 Edit My Details", expanded=True):
+        new_bio = st.text_area("About Me", value=user_data.get("bio", ""), placeholder="e.g. Aspiring Pharmacist...")
+        c1, c2 = st.columns(2)
+        new_school = c1.text_input("University", value=user_data.get("school", "UNIZIK"))
+        new_level = c2.selectbox("Level", ["100L", "200L", "300L", "400L", "500L", "600L"], index=1)
+        new_course = st.text_input("Course", value=user_data.get("course", "Pharmacy"))
+        new_phone = st.text_input("WhatsApp Number", value=user_data.get("phone", ""))
+        
+        if st.button("💾 Save Updates"):
+            users_db[username].update({"bio":new_bio, "school":new_school, "level":new_level, "course":new_course, "phone":new_phone})
+            save_users(users_db)
+            st.toast("Profile Synced! ✅")
+            st.rerun()
 
+# --- 👑 ADMIN DASHBOARD ---
+if app_mode == "👑 Admin Dashboard" and username == "AdminAyo":
+    st.markdown('<p class="pro-header">👑 Admin Command Center</p>', unsafe_allow_html=True)
+    admin_list = []
+    for u, d in users_db.items():
+        admin_list.append({
+            "User": u, "Phone": d.get("phone"), "Level": d.get("level"), 
+            "Course": d.get("course"), "School": d.get("school"), "XP": d.get("score")
+        })
+    st.table(admin_list)
+    st.metric("Total Students", len(admin_list))
+    st.divider()
+    st.subheader("📦 Marketplace Approvals")
+    pending_items = load_pending_products()
+    
+    if not pending_items:
+        st.write("No pending items to approve.")
+    else:
+        for i, p in enumerate(pending_items):
+            col1, col2 = st.columns([3, 1])
+            col1.write(f"**{p['name']}** by @{p['vendor']} (₦{p['price']})")
+            if col2.button("Approve ✅", key=f"appr_{i}"):
+                live_db = load_approved_products()
+                live_db.append(p)
+                save_approved_products(live_db)
+                
+                # Remove from pending and refresh
+                pending_items.pop(i)
+                save_pending_products(pending_items)
+                st.toast(f"Approved {p['name']}! 🚀")
+                st.rerun()
+                
 # --- 0. HOME ---
 if app_mode == "Home":
     st.markdown('<br>', unsafe_allow_html=True)
@@ -692,8 +744,70 @@ if app_mode == "Leaderboard":
     lb_data = [[user, data["score"]] for user, data in db.items()]
     global_lb = pd.DataFrame(lb_data, columns=['Name', 'Score']).sort_values(by='Score', ascending=False).reset_index(drop=True)
     st.dataframe(global_lb, hide_index=True, use_container_width=True)
+# --- 🌿 VENDOR HUB (STUDENT MARKETPLACE) ---
+if app_mode == "🌿 Vendor Hub":
+    st.markdown('<p class="pro-header">🛍️ Student Marketplace</p>', unsafe_allow_html=True)
+    
+    st.warning("🛡️ **Safety Tip:** Always meet at a busy UNIZIK spot (like the Faculty entrance) to exchange items. Never pay before seeing the product!")
+
+    tab1, tab2 = st.tabs(["🛒 Buy Items", "➕ Sell Something"])
+
+    with tab1:
+        approved_items = load_approved_products()
+        if not approved_items:
+            st.info("The market is empty. Be the first to list a textbook or lab coat!")
+        else:
+            for i, item in enumerate(approved_items):
+                with st.container():
+                    # Logic to handle if there is an image
+                    img_html = ""
+                    if item.get("image"):
+                        img_html = f'<img src="data:image/jpeg;base64,{item["image"]}" style="width:100%; border-radius:10px; margin-bottom:10px;">'
+                    
+                    st.markdown(f"""
+                    <div class="glass-container" style="margin-bottom: 15px;">
+                        {img_html}
+                        <h4 style="color: #3b82f6;">{item['name']}</h4>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #10b981;">₦{item['price']}</p>
+                        <p style="opacity: 0.8;"><b>Condition:</b> {item['dosage_form']} | <b>Seller:</b> @{item['vendor']}</p>
+                        <p>{item['treats']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Contact Logic (Now correctly pushed inside the container)
+                    wa_phone = item.get('link', '').replace('+', '').replace(' ', '')
+                    if st.button(f"💬 Chat with @{item['vendor']}", key=f"buy_{i}"):
+                        msg = f"Hello, I am interested in your {item['name']} on Desprix Med AI."
+                        st.markdown(f'<meta http-equiv="refresh" content="0; url=https://wa.me/{wa_phone}?text={msg}">', unsafe_allow_html=True)
+
+    with tab2:
+        st.subheader("List Your Item")
+        if not user_data.get('phone'):
+            st.error("⚠️ You must add your phone number in **'My Profile'** before you can sell!")
+        else:
+            with st.form("market_form", clear_on_submit=True):
+                item_name = st.text_input("Item Name (e.g. Lab Coat, 200L PQ)")
+                price = st.text_input("Price (₦)")
+                prod_pic = st.file_uploader("Upload Product Image", type=['png', 'jpg', 'jpeg'])
+                condition = st.selectbox("Condition", ["Brand New", "Gently Used", "Well Used"])
+                details = st.text_area("Description")
+                
+                if st.form_submit_button("🚀 Submit for Approval"):
+                    if item_name and price:
+                        img_str = None
+                        if prod_pic:
+                            img_str = base64.b64encode(prod_pic.read()).decode('utf-8')
+                        
+                        pending_db = load_pending_products()
+                        pending_db.append({
+                            "name": item_name, "price": price, "dosage_form": condition,
+                            "treats": details, "vendor": username, 
+                            "link": user_data.get('phone'), "image": img_str
+                        })
+                        save_pending_products(pending_db)
+                        st.success("Sent to Admin for approval! ✅")
+                        st.rerun()
 
 st.sidebar.divider()
-st.sidebar.caption(f"{username}'s Secured Session | Desprix Crew ®2026")
-
-
+st.sidebar.caption(f"{username}'s Secured Session | Desprix Crew ©2026")
+                
