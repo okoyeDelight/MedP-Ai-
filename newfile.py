@@ -71,32 +71,25 @@ except KeyError:
 
 st.set_page_config(page_title="Desprix Med AI", page_icon="💊", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CSS: CROSS-DEVICE COMPATIBILITY ---
+# --- CSS: ULTIMATE PREMIUM UI ---
 st.markdown("""
 <style>
-    /* Ensure the 3-line menu is visible on ALL mobile browsers */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&display=swap');
+
+    /* UI FIX: MAKE THE 3-LINE MENU BUTTON VISIBLE & BLUE */
     header[data-testid="stHeader"] {
         visibility: visible !important;
         display: block !important;
+        background: rgba(0,0,0,0) !important;
     }
 
-    /* Professional Button Styling */
     button[kind="header"] {
-        background-color: #3b82f6 !important; /* UNIZIK Blue / Med Blue */
+        background-color: #3b82f6 !important;
         color: white !important;
-        border: 1.5px solid #ffffff !important; /* The White Border */
+        border: 2px solid white !important;
         border-radius: 8px !important;
-        box-shadow: 0px 2px 5px rgba(0,0,0,0.3) !important;
-        margin-left: 10px !important;
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.8) !important;
     }
-
-    /* Clean up the rest of the UI */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    .block-container {padding-top: 2rem !important;}
-</style>
-""", unsafe_allow_html=True)
-
 
     [data-testid="stAppViewContainer"] { background-color: #0b0f19; color: #f8fafc; }
     [data-testid="stSidebar"] { background-color: #111827; border-right: 1px solid #1f2937; }
@@ -108,35 +101,22 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.4);
         transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); margin-bottom: 8px;
     }
-    .stButton>button:hover { background: rgba(51, 65, 85, 0.9); transform: translateY(-2px); border-color: #475569; color: #ffffff; box-shadow: 0 6px 12px rgba(0,0,0,0.5); }
-    .stButton>button:active { transform: scale(0.95); box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-    .stButton>button[kind="primary"] { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; }
-    
-    .hello-text { overflow: hidden; border-right: 3px solid #3b82f6; white-space: nowrap; margin: 0 auto; font-size: 2.8rem; font-weight: 800; color: #ffffff; letter-spacing: 0.08em; animation: typing 1.5s steps(30, end), blink-caret .75s step-end infinite; }
-    @keyframes typing { from { width: 0 } to { width: 100% } } @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #3b82f6; } }
 
-    .pro-header { background: -webkit-linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; font-weight: 800; text-align: left; margin-bottom: 20px; letter-spacing: -0.5px; }
+    .hello-text { overflow: hidden; border-right: 3px solid #3b82f6; white-space: nowrap; margin: 0 auto; font-size: 2.5rem; font-weight: 800; color: white; width: 0; animation: typing 2s steps(20, end) forwards, blink-caret .75s step-end infinite; }
+    @keyframes typing { from { width: 0 } to { width: 100% } }
+    @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #3b82f6 } }
+
+    .user-bubble { background: linear-gradient(135deg, #3b82f6, #1d4ed8); padding: 14px 18px; border-radius: 20px 20px 5px 20px; color: white; margin-bottom: 10px; align-self: flex-end; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 80%; }
+    .ai-bubble { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(12px); padding: 18px 22px; border-radius: 20px 20px 20px 5px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); line-height: 1.6; }
     
-    .stTextInput input, .stChatInput textarea, .stTextArea textarea { background: rgba(30, 41, 59, 0.5) !important; color: #f8fafc !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 15px !important; font-size: 15px !important; }
-    .stTextInput input:focus, .stChatInput textarea:focus, .stTextArea textarea:focus { border-color: #3b82f6 !important; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4) !important; transform: translateY(-1px); transition: all 0.3s ease; }
+    .glass-container { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; margin-bottom: 20px; }
     
-    .user-bubble { background: linear-gradient(135deg, #3b82f6, #1d4ed8); padding: 14px 18px; border-radius: 20px 20px 4px 20px; margin-bottom: 15px; color: #ffffff; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25); font-size: 15px; line-height: 1.5; max-width: 85%; display: inline-block; }
-    .ai-bubble { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(12px); padding: 18px 22px; border-radius: 20px 20px 20px 4px; margin-bottom: 25px; border: 1px solid rgba(148, 163, 184, 0.15); box-shadow: 0 8px 20px rgba(0,0,0,0.2); color: #f1f5f9; font-size: 15px; line-height: 1.7; }
-    .ai-bubble strong { color: #60a5fa; font-weight: 600; }
-    
-    .community-msg { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(5px); padding: 12px 18px; border-radius: 20px 20px 20px 0; margin-bottom: 10px; border-left: 4px solid #10b981; border: 1px solid rgba(255,255,255,0.05); }
-    .community-user { color: #10b981; font-weight: 600; font-size: 13px; }
-    .community-text { color: #e2e8f0; font-size: 15px; line-height: 1.5; margin-top: 5px; }
-    .tagged-msg { background: rgba(39, 39, 42, 0.9); border-left: 4px solid #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.15); }
-    .tagged-text { color: #fbbf24; font-weight: bold; }
-    
-    .glass-container { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 22px; margin-top: 15px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); font-size: 15px; line-height: 1.7; color: #f1f5f9; }
-    .glass-container strong { color: #60a5fa; }
-    
-    [data-testid="stExpander"] { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; margin-top: 10px; }
-    [data-testid="stExpander"] summary { font-family: 'Poppins', sans-serif; font-weight: 600; color: #94a3b8; }
-    </style>
-    """, unsafe_allow_html=True)
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .block-container {padding-top: 2rem !important;}
+</style>
+""", unsafe_allow_html=True)
+
 
 # --- INITIALIZE SESSION STATE ---
 if 'logged_in_user' not in st.session_state: st.session_state.logged_in_user = None
