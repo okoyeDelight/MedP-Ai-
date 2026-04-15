@@ -316,24 +316,70 @@ if app_mode == "👑 Admin Dashboard" and username == "MED AI":
 # --- 0. HOME ---
 if app_mode == "Home":
     st.markdown('<br>', unsafe_allow_html=True)
+    
+    # 1. Greeting Section (Like the mockup)
+    st.markdown(f"<h3 style='color: #e2e8f0; font-weight: 700; margin-bottom: 0;'>Hello, {username}! 👋</h3>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #94a3b8; font-size: 14px; margin-top: 5px; margin-bottom: 20px;'>Explore your Med AI features below.</p>", unsafe_allow_html=True)
+    
+    # 2. Hero Banner (Like the "CREATING DIGITAL EXPERIENCES" section)
     st.markdown("""
-        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-            <div style="width: 75px; height: 75px; background: linear-gradient(135deg, #3b82f6, #1e40af); border-radius: 50%; box-shadow: 0 0 25px rgba(59, 130, 246, 0.4), inset 0 0 15px rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 35px; color: white;">✨</div>
-        </div>
-        <div style="text-align: center;">
-            <div class="typewriter-container"><div class="hello-text">HELLO</div></div>
-            <p style="color: #94a3b8; font-size: 16px; font-weight: 300; margin-top: 5px;">I'm Med AI. How can I help you today?</p>
-        </div><br>
+    <div style="background: linear-gradient(135deg, #0f172a, #1e3a8a); padding: 30px 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #3b82f644; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+        <h2 style="color: white; margin-top: 0px; font-weight: 800; font-size: 22px; line-height: 1.3;">MASTER YOUR<br>PHARMACY EXAMS.</h2>
+        <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 10px;">AI-powered remedies, CBTs, and drug research specifically tailored for UNIZIK pharmacy coursework.</p>
+    </div>
     """, unsafe_allow_html=True)
 
     quick_query = None
-    col1, col2, col3 = st.columns([1, 4, 1])
-    with col2:
-        if st.button("✨ Verify a NAFDAC Number"): quick_query = "What is the official procedure to verify a NAFDAC registration number in Nigeria?"
-        if st.button("✨ Explain a Drug Mechanism"): quick_query = "Explain the mechanism of action of ACE Inhibitors simply."
 
-    st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
-    user_query = st.chat_input("Ask me anything about medicine...")
+    # 3. Features Grid (Like the 2x2 "Services" grid in the mockup)
+    st.markdown("<h4 style='color: #e2e8f0; font-size: 18px; margin-bottom: 15px;'>Med AI Services</h4>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none;">
+            <h3 style="margin: 0; font-size: 24px;">🔍</h3>
+            <h5 style="color: #f8fafc; margin: 8px 0 4px 0; font-size: 15px;">Verify NAFDAC</h5>
+            <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.3;">Check official registration.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Ask AI", key="n_btn", use_container_width=True): quick_query = "What is the official procedure to verify a NAFDAC registration number in Nigeria?"
+
+    with col2:
+        st.markdown("""
+        <div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none;">
+            <h3 style="margin: 0; font-size: 24px;">🧬</h3>
+            <h5 style="color: #f8fafc; margin: 8px 0 4px 0; font-size: 15px;">Drug Mechanisms</h5>
+            <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.3;">Explain ACE Inhibitors.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Ask AI", key="d_btn", use_container_width=True): quick_query = "Explain the mechanism of action of ACE Inhibitors simply."
+        
+    col3, col4 = st.columns(2)
+    
+    with col3:
+        st.markdown("""
+        <div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none; margin-top: 10px;">
+            <h3 style="margin: 0; font-size: 24px;">🌿</h3>
+            <h5 style="color: #f8fafc; margin: 8px 0 4px 0; font-size: 15px;">Herbal Remedy</h5>
+            <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.3;">Safe home treatments.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Ask AI", key="h_btn", use_container_width=True): quick_query = "What are safe household herbal remedies for fever?"
+
+    with col4:
+        st.markdown("""
+        <div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none; margin-top: 10px;">
+            <h3 style="margin: 0; font-size: 24px;">🎓</h3>
+            <h5 style="color: #f8fafc; margin: 8px 0 4px 0; font-size: 15px;">Study Planner</h5>
+            <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.3;">Build a study schedule.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Ask AI", key="s_btn", use_container_width=True): quick_query = "Create a weekly study plan for a 200-level pharmacy student focusing on anatomy and physiology."
+
+    st.markdown('<div style="height: 80px;"></div>', unsafe_allow_html=True)
+    user_query = st.chat_input("Ask Med AI anything about medicine...")
     active_query = user_query or quick_query
     
     if active_query:
@@ -345,7 +391,7 @@ if app_mode == "Home":
                 resp = model.generate_content(active_query)
                 st.markdown(f'<div class="ai-bubble">{resp.text}</div>', unsafe_allow_html=True)
             except Exception as e: st.error(f"Connection Error: {e}")
-
+                
 # --- 1. FIND REMEDY ---
 if app_mode == "Find Remedy":
     st.markdown('<p class="pro-header">🌿 Herbal Remedy Guide</p>', unsafe_allow_html=True)
