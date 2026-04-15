@@ -146,42 +146,62 @@ if "user" in query_params and not st.session_state.get('logged_in_user'):
 
 # MAIN PAGE LOGIN (If not logged in)
 if not st.session_state.get('logged_in_user'):
-    st.markdown('<div class="glass-container" style="text-align: center;">', unsafe_allow_html=True)
-    st.markdown("### 🔐 Secure Student Access")
-    st.write("Login or Sign Up to unlock Med AI features and save your progress.")
+    st.markdown("<br><br>", unsafe_allow_html=True) 
     
-    auth_mode = st.radio("Choose Action", ["Login", "Sign Up"], horizontal=True, label_visibility="collapsed")
-    auth_user = st.text_input("Nickname", placeholder="Enter your nickname...")
-    auth_pass = st.text_input("Password", type="password", placeholder="Enter your password...")
-    remember_me = st.checkbox("Remember Me on this device")
+    # This centers the login form
+    col1, col2, col3 = st.columns([1, 2, 1]) 
     
-    if st.button("Access Med AI", type="primary"):
-        if auth_user and auth_pass:
-            if auth_mode == "Sign Up":
-                if auth_user in users_db:
-                    st.error("Nickname taken! Choose another or log in.")
+    with col2:
+        st.markdown('<div class="glass-container" style="text-align: center;">', unsafe_allow_html=True)
+        st.markdown("<h2 style='color: #e2e8f0; font-weight: 600; margin-bottom: 5px;'>🔐 Secure Student Access</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #94a3b8; font-size: 14px; margin-bottom: 25px;'>Login or Sign Up to unlock Med AI features and save your progress.</p>", unsafe_allow_html=True)
+        
+        # Premium Tabs instead of radio buttons
+        tab_login, tab_signup = st.tabs(["🔑 Login", "📝 Sign Up"])
+        
+        with tab_login:
+            st.markdown("<br>", unsafe_allow_html=True)
+            login_user = st.text_input("Nickname", placeholder="Enter your nickname...", key="log_user")
+            login_pass = st.text_input("Password", type="password", placeholder="Enter your password...", key="log_pass")
+            login_remember = st.checkbox("Remember Me on this device", key="log_rem")
+            
+            if st.button("Log In", type="primary", use_container_width=True, key="log_btn"):
+                if login_user and login_pass:
+                    if login_user in users_db and users_db[login_user]["password"] == login_pass:
+                        st.session_state.logged_in_user = login_user
+                        if login_remember:
+                            st.query_params["user"] = login_user
+                        st.toast("Welcome back! 🚀")
+                        st.rerun()
+                    else:
+                        st.error("Invalid Nickname or Password.")
                 else:
-                    users_db[auth_user] = {"password": auth_pass, "score": 0, "history": [], "avatar": None, "saved_cbt": [], "saved_theory": []}
-                    save_users(users_db)
-                    st.session_state.logged_in_user = auth_user
-                    if remember_me:
-                        st.query_params["user"] = auth_user
-                    st.toast(f"Welcome {auth_user}! 🎉")
-                    st.rerun()
-            elif auth_mode == "Login":
-                if auth_user in users_db and users_db[auth_user]["password"] == auth_pass:
-                    st.session_state.logged_in_user = auth_user
-                    if remember_me:
-                        st.query_params["user"] = auth_user
-                    st.toast("Welcome back! 🚀")
-                    st.rerun()
+                    st.warning("Please fill in both fields.")
+                    
+        with tab_signup:
+            st.markdown("<br>", unsafe_allow_html=True)
+            sign_user = st.text_input("Choose Nickname", placeholder="Enter a unique nickname...", key="sig_user")
+            sign_pass = st.text_input("Create Password", type="password", placeholder="Create a secure password...", key="sig_pass")
+            sign_remember = st.checkbox("Remember Me on this device", key="sig_rem")
+            
+            if st.button("Create Account", type="primary", use_container_width=True, key="sig_btn"):
+                if sign_user and sign_pass:
+                    if sign_user in users_db:
+                        st.error("Nickname taken! Choose another or log in.")
+                    else:
+                        users_db[sign_user] = {"password": sign_pass, "score": 0, "history": [], "avatar": None, "saved_cbt": [], "saved_theory": []}
+                        save_users(users_db)
+                        st.session_state.logged_in_user = sign_user
+                        if sign_remember:
+                            st.query_params["user"] = sign_user
+                        st.toast(f"Welcome {sign_user}! 🎉")
+                        st.rerun()
                 else:
-                    st.error("Invalid Nickname or Password.")
-        else:
-            st.warning("Please fill in both fields.")
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.stop() 
-
+                    st.warning("Please fill in both fields.")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    st.stop()
+                        
 # --- USER IS LOGGED IN past this point ---
 username = st.session_state.logged_in_user
 user_data = users_db[username]
