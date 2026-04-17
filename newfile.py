@@ -34,7 +34,7 @@ def load_users():
             "password": "Desprix07!", "score": 100, "avatar": None,
             "bio": "Founder of Desprix", "school": "UNIZIK", 
             "level": "200L", "course": "Pharmacy", "phone": "08000000000",
-            "saved_cbt": [], "saved_theory": []
+            "saved_cbt": [], "saved_theory": [], "history": []
         }
     })
     
@@ -64,15 +64,21 @@ def log_user_history(username, action_detail):
     db = load_users()
     if username in db:
         timestamp = datetime.datetime.now().strftime("%b %d, %H:%M")
+        db[username].setdefault("history", [])
         db[username]["history"].insert(0, f"[{timestamp}] {action_detail}")
         db[username]["history"] = db[username]["history"][:20]
         save_users(db)
 
 # 1. Setup & API Config
 try:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-except KeyError:
-    st.error("⚠️ GEMINI_API_KEY is missing! Please add it to your Streamlit secrets.")
+    gemini_api_key = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY"))
+except Exception:
+    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+
+if gemini_api_key:
+    genai.configure(api_key=gemini_api_key)
+else:
+    st.warning("⚠️ GEMINI_API_KEY is missing. Add it as a Replit secret to enable AI-powered responses.")
 
 st.set_page_config(page_title="Desprix Med AI", page_icon="💊", layout="wide", initial_sidebar_state="collapsed")
 
@@ -127,92 +133,77 @@ st.markdown("""
 if 'logged_in_user' not in st.session_state: st.session_state.logged_in_user = None
 if 'quiz_completed_today' not in st.session_state: st.session_state.quiz_completed_today = False
 if 'active_quiz_answers' not in st.session_state: st.session_state.active_quiz_answers = {}
+if 'last_seen_messages' not in st.session_state:
+    st.session_state.last_seen_messages = 0
+users_db = load_json(USERS_DB, {})
+total_messages = len(load_chat())
 
-# --- PRE-LOAD CHAT FOR NOTIFICATIONS ---
-global_chat = load_chat()
-total_messages = len(global_chat)
-if 'last_seen_messages' not in st.session_state: st.session_state.last_seen_messages = total_messages
-
-# --- SIDEBAR & MAIN AUTHENTICATION SYSTEM ---
-st.sidebar.title("🌿 Desprix 2.5")
-users_db = load_users()
-
-# CHECK FOR "REMEMBER ME" (Auto-login from URL)
+# --- 1. AUTO-LOGIN LOGIC ---
 query_params = st.query_params
 if "user" in query_params and not st.session_state.get('logged_in_user'):
     saved_user = query_params["user"]
     if saved_user in users_db:
         st.session_state.logged_in_user = saved_user
 
-# MAIN PAGE LOGIN (If not logged in)
+# --- 2. MAIN LOGIN UI ---
 if not st.session_state.get('logged_in_user'):
-    st.markdown("<br><br>", unsafe_allow_html=True) 
-    
-    # This centers the login form
-    col1, col2, col3 = st.columns([1, 2, 1]) 
+    col1, col2, col3 = st.columns([1, 5, 1])
     
     with col2:
-        st.markdown('<div class="glass-container" style="text-align: center;">', unsafe_allow_html=True)
-        st.markdown("<h2 style='color: #e2e8f0; font-weight: 600; margin-bottom: 5px;'>🔐 Secure Student Access</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #94a3b8; font-size: 14px; margin-bottom: 25px;'>Login or Sign Up to unlock Med AI features and save your progress.</p>", unsafe_allow_html=True)
-        
-        # Premium Tabs instead of radio buttons
-        tab_login, tab_signup = st.tabs(["🔑 Login", "📝 Sign Up"])
-        
+        st.markdown("""
+            <div style='background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); text-align: center;'>
+                <h2 style='margin-bottom: 0px;'>🔐 MedP-AI Portal</h2>
+                <p style='color: #888; font-size: 14px;'>Professional Pharmacy Access</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        tab_login, tab_signup = st.tabs(["🔑 Login", "📝 Create Account"])
+
         with tab_login:
-            st.markdown("<br>", unsafe_allow_html=True)
-            login_user = st.text_input("Nickname", placeholder="Enter your nickname...", key="log_user")
-            login_pass = st.text_input("Password", type="password", placeholder="Enter your password...", key="log_pass")
-            login_remember = st.checkbox("Remember Me on this device", key="log_rem")
+            login_user = st.text_input("Nickname", placeholder="Enter nickname...", key="log_user")
+            login_pass = st.text_input("Access Key", type="password", placeholder="••••••••", key="log_pass")
             
-            if st.button("Log In", type="primary", use_container_width=True, key="log_btn"):
-                if login_user and login_pass:
-                    if login_user in users_db and users_db[login_user]["password"] == login_pass:
-                        st.session_state.logged_in_user = login_user
-                        if login_remember:
-                            st.query_params["user"] = login_user
-                        st.toast("Welcome back! 🚀")
-                        st.rerun()
-                    else:
-                        st.error("Invalid Nickname or Password.")
+            if st.button("Unlock Dashboard", use_container_width=True):
+                if login_user in users_db and users_db[login_user]['password'] == login_pass:
+                    st.session_state.logged_in_user = login_user
+                    st.rerun()
                 else:
-                    st.warning("Please fill in both fields.")
-                    
+                    st.error("Invalid credentials. Please try again.")
+
         with tab_signup:
             st.markdown("<br>", unsafe_allow_html=True)
-            sign_user = st.text_input("Choose Nickname", placeholder="Enter a unique nickname...", key="sig_user")
-            sign_pass = st.text_input("Create Password", type="password", placeholder="Create a secure password...", key="sig_pass")
-            sign_remember = st.checkbox("Remember Me on this device", key="sig_rem")
+            reg_user = st.text_input("Choose Nickname", placeholder="Enter unique nickname...", key="reg_user")
+            reg_pass = st.text_input("Create Access Key", type="password", placeholder="Choose a secure key", key="reg_pass")
             
-            if st.button("Create Account", type="primary", use_container_width=True, key="sig_btn"):
-                if sign_user and sign_pass:
-                    if sign_user in users_db:
-                        st.error("Nickname taken! Choose another or log in.")
+            if st.button("Create Account", use_container_width=True, type="primary"):
+                if reg_user and reg_pass:
+                    if reg_user in users_db:
+                        st.error("This nickname is already taken! Please choose another.")
                     else:
-                        users_db[sign_user] = {"password": sign_pass, "score": 0, "history": [], "avatar": None, "saved_cbt": [], "saved_theory": []}
-                        save_users(users_db)
-                        st.session_state.logged_in_user = sign_user
-                        if sign_remember:
-                            st.query_params["user"] = sign_user
-                        st.toast(f"Welcome {sign_user}! 🎉")
-                        st.rerun()
+                        users_db[reg_user] = {
+                            "password": reg_pass,
+                            "saved_cbt": [],
+                            "saved_theory": []
+                        }
+                        save_json(USERS_DB, users_db)
+                        st.success(f"Account created for {reg_user}! You can now switch to the Login tab.")
                 else:
-                    st.warning("Please fill in both fields.")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-    st.stop()
-                        
-# --- USER IS LOGGED IN past this point ---
-username = st.session_state.logged_in_user
-user_data = users_db[username]
+                    st.warning("Please fill in both fields to register.")
+        st.stop()
 
-# Ensure lists exist for saved materials
+# --- USER IS LOGGED IN ---
+if st.session_state.get('logged_in_user'):
+    username = st.session_state.logged_in_user
+    user_data = users_db.get(username, {})
+else:
+    st.info("Please log in to access the Med-AI Dashboard.")
+    st.stop()
+    
 if "saved_cbt" not in user_data: user_data["saved_cbt"] = []
 if "saved_theory" not in user_data: user_data["saved_theory"] = []
 
 st.sidebar.markdown(f"### 👤 Profile: @{username}")
 
-# Profile Picture Logic
 avatar_base64 = user_data.get("avatar")
 if avatar_base64:
     st.sidebar.markdown(f'<img src="data:image/jpeg;base64,{avatar_base64}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">', unsafe_allow_html=True)
@@ -222,20 +213,16 @@ else:
 pic_upload = st.sidebar.file_uploader("Change Picture", type=['png', 'jpg', 'jpeg'], label_visibility="collapsed")
 
 if pic_upload:
-    # This button stops the "Rerun Loop" by making the save action manual
     if st.sidebar.button("💾 Confirm New Picture", use_container_width=True):
         encoded_img = base64.b64encode(pic_upload.read()).decode('utf-8')
-        
-        # Fresh load to stay in sync
         users_db = load_users()
         users_db[username]["avatar"] = encoded_img
         save_users(users_db)
-        
         st.toast("Profile updated! 🌟")
         time.sleep(1)
         st.rerun()
 
-st.sidebar.markdown(f"<div style='text-align: center;'><strong>XP:</strong> {user_data['score']} ⭐️</div>", unsafe_allow_html=True)
+st.sidebar.markdown(f"<div style='text-align: center;'><strong>XP:</strong> {user_data.get('score', 0)} 🌟</div>", unsafe_allow_html=True)
 
 if st.sidebar.button("Log Out"):
     st.session_state.logged_in_user = None
@@ -244,7 +231,6 @@ if st.sidebar.button("Log Out"):
 
 st.sidebar.divider()
 
-# Calculate Chat Notifications
 unread_count = total_messages - st.session_state.last_seen_messages
 chat_nav_label = f"Student Lounge (Chat) 🔴 {unread_count}" if unread_count > 0 else "Student Lounge (Chat)"
 
@@ -253,17 +239,11 @@ nav_options = ["Home", "My Profile", "Find Remedy", "Drug Researcher (PRO)", "NA
 if username == "MED AI":
     nav_options.append("👑 Admin Dashboard")
 
-# THE GATEKEEPER: Unlocks the door for you
 if username == "MED AI" and user_data.get('password') == "Desprix07!":
-    modes.insert(0, "🛡️ Admin Dashboard")
+    nav_options.insert(0, "🛡️ Admin Dashboard")
 
 app_mode = st.sidebar.selectbox("Navigate", nav_options)
 
-
-
-                        # ==========================================
-# APP SECTIONS
-# ==========================================
 # --- MY PROFILE SECTION ---
 if app_mode == "My Profile":
     st.markdown('<p class="pro-header">👤 Student Profile</p>', unsafe_allow_html=True)
@@ -306,8 +286,6 @@ if app_mode == "👑 Admin Dashboard" and username == "MED AI":
                 live_db = load_approved_products()
                 live_db.append(p)
                 save_approved_products(live_db)
-                
-                # Remove from pending and refresh
                 pending_items.pop(i)
                 save_pending_products(pending_items)
                 st.toast(f"Approved {p['name']}! 🚀")
@@ -316,12 +294,9 @@ if app_mode == "👑 Admin Dashboard" and username == "MED AI":
 # --- 0. HOME ---
 if app_mode == "Home":
     st.markdown('<br>', unsafe_allow_html=True)
-    
-    # 1. Greeting Section (Like the mockup)
     st.markdown(f"<h3 style='color: #e2e8f0; font-weight: 700; margin-bottom: 0;'>Hello, {username}! 👋</h3>", unsafe_allow_html=True)
     st.markdown("<p style='color: #94a3b8; font-size: 14px; margin-top: 5px; margin-bottom: 20px;'>Explore your Med AI features below.</p>", unsafe_allow_html=True)
     
-    # 2. Hero Banner (Like the "CREATING DIGITAL EXPERIENCES" section)
     st.markdown("""
     <div style="background: linear-gradient(135deg, #0f172a, #1e3a8a); padding: 30px 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #3b82f644; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
         <h2 style="color: white; margin-top: 0px; font-weight: 800; font-size: 22px; line-height: 1.3;">MASTER YOUR<br>PHARMACY EXAMS.</h2>
@@ -330,52 +305,22 @@ if app_mode == "Home":
     """, unsafe_allow_html=True)
 
     quick_query = None
-
-    # 3. Features Grid (Like the 2x2 "Services" grid in the mockup)
     st.markdown("<h4 style='color: #e2e8f0; font-size: 18px; margin-bottom: 15px;'>Med AI Services</h4>", unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
-    
     with col1:
-        st.markdown("""
-        <div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none;">
-            <h3 style="margin: 0; font-size: 24px;">🔍</h3>
-            <h5 style="color: #f8fafc; margin: 8px 0 4px 0; font-size: 15px;">Verify NAFDAC</h5>
-            <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.3;">Check official registration.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("""<div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none;"><h3>🔍</h3><h5 style="color: #f8fafc;">Verify NAFDAC</h5><p style="color: #94a3b8; font-size: 12px;">Check official registration.</p></div>""", unsafe_allow_html=True)
         if st.button("Ask AI", key="n_btn", use_container_width=True): quick_query = "What is the official procedure to verify a NAFDAC registration number in Nigeria?"
-
     with col2:
-        st.markdown("""
-        <div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none;">
-            <h3 style="margin: 0; font-size: 24px;">🧬</h3>
-            <h5 style="color: #f8fafc; margin: 8px 0 4px 0; font-size: 15px;">Drug Mechanisms</h5>
-            <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.3;">Explain ACE Inhibitors.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("""<div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none;"><h3>🧬</h3><h5 style="color: #f8fafc;">Drug Mechanisms</h5><p style="color: #94a3b8; font-size: 12px;">Explain ACE Inhibitors.</p></div>""", unsafe_allow_html=True)
         if st.button("Ask AI", key="d_btn", use_container_width=True): quick_query = "Explain the mechanism of action of ACE Inhibitors simply."
         
     col3, col4 = st.columns(2)
-    
     with col3:
-        st.markdown("""
-        <div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none; margin-top: 10px;">
-            <h3 style="margin: 0; font-size: 24px;">🌿</h3>
-            <h5 style="color: #f8fafc; margin: 8px 0 4px 0; font-size: 15px;">Herbal Remedy</h5>
-            <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.3;">Safe home treatments.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("""<div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none; margin-top: 10px;"><h3>🌿</h3><h5 style="color: #f8fafc;">Herbal Remedy</h5><p style="color: #94a3b8; font-size: 12px;">Safe home treatments.</p></div>""", unsafe_allow_html=True)
         if st.button("Ask AI", key="h_btn", use_container_width=True): quick_query = "What are safe household herbal remedies for fever?"
-
     with col4:
-        st.markdown("""
-        <div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none; margin-top: 10px;">
-            <h3 style="margin: 0; font-size: 24px;">🎓</h3>
-            <h5 style="color: #f8fafc; margin: 8px 0 4px 0; font-size: 15px;">Study Planner</h5>
-            <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.3;">Build a study schedule.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("""<div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none; margin-top: 10px;"><h3>🎓</h3><h5 style="color: #f8fafc;">Study Planner</h5><p style="color: #94a3b8; font-size: 12px;">Build a study schedule.</p></div>""", unsafe_allow_html=True)
         if st.button("Ask AI", key="s_btn", use_container_width=True): quick_query = "Create a weekly study plan for a 200-level pharmacy student focusing on anatomy and physiology."
 
     st.markdown('<div style="height: 80px;"></div>', unsafe_allow_html=True)
@@ -410,29 +355,14 @@ if app_mode == "Find Remedy":
                         active_products.append(safe_prod)
 
                 model = genai.GenerativeModel('models/gemini-2.5-flash')
-                prompt = f"""
-                Act as a strict, ethical Nigerian clinical pharmacist. Query: '{u_input}'
-                1. Give a practical leaf remedy in simple English. Ensure it is safe based on the query.
-                2. Provide a short, funny summary in Pidgin.
-                3. VETTING: List of ACTIVE supplements: {json.dumps(active_products)}. 
-                If a product is 100% safe for this context, recommend it under '🛒 Verified Supplements on Desprix Market'.
-                """
+                prompt = f"""Act as a strict, ethical Nigerian clinical pharmacist. Query: '{u_input}'\n1. Give a practical leaf remedy in simple English. Ensure it is safe based on the query.\n2. Provide a short, funny summary in Pidgin.\n3. VETTING: List of ACTIVE supplements: {json.dumps(active_products)}. If a product is 100% safe, recommend it."""
                 resp = model.generate_content(prompt)
                 st.markdown(f'<div class="glass-container">{resp.text}</div>', unsafe_allow_html=True)
                 
                 for prod in all_approved:
                     if prod.get("expiry_date", "2000-01-01") >= today_date and prod['name'] in resp.text:
                         img_html = f'<img src="data:image/jpeg;base64,{prod["image"]}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;">' if prod.get("image") else ""
-                        st.markdown(f"""
-                            <div style="background: rgba(30, 41, 59, 0.8); padding: 15px; border-radius: 15px; border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 15px; text-align: center;">
-                                {img_html}
-                                <h3 style="margin-bottom: 5px; color: #10b981;">{prod['name']}</h3>
-                                <p style="color: #cbd5e1; font-size: 14px;">{prod['dosage_form']} • {prod['price']}</p>
-                                <a href="{prod['link']}" target="_blank" style="text-decoration: none;">
-                                    <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 10px; border-radius: 10px; color: white; font-weight: bold; margin-top: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">🛒 Buy Now</div>
-                                </a>
-                            </div>
-                        """, unsafe_allow_html=True)
+                        st.markdown(f"""<div style="background: rgba(30, 41, 59, 0.8); padding: 15px; border-radius: 15px; border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 15px; text-align: center;">{img_html}<h3 style="color: #10b981;">{prod['name']}</h3><p>{prod['dosage_form']} • {prod['price']}</p><a href="{prod['link']}" target="_blank" style="text-decoration: none;"><div style="background: linear-gradient(135deg, #10b981, #059669); padding: 10px; border-radius: 10px; color: white; font-weight: bold;">🛒 Buy Now</div></a></div>""", unsafe_allow_html=True)
             except Exception as e: st.error(f"Error: {e}")
 
 # --- 2. VENDOR HUB ---
@@ -763,6 +693,7 @@ if app_mode == "Exam Mastery Hub":
 if app_mode == "Structure Master Class":
     st.markdown('<p class="pro-header">🎨 Dynamic Structure Cheats</p>', unsafe_allow_html=True)
     struct_query = st.text_input("Enter a structure:", placeholder="Type a chemical name...")
+    
     if st.button("Teach Me How To Draw This", type="primary"):
         if struct_query:
             log_user_history(username, f"Mastered Structure: {struct_query}")
@@ -771,10 +702,12 @@ if app_mode == "Structure Master Class":
                     model = genai.GenerativeModel('models/gemini-2.5-flash')
                     resp = model.generate_content(f"Teach a pharmacy student how to draw '{struct_query}' using a visual mnemonic. Add Pidgin encouragement.")
                     st.markdown(f'<div class="glass-container">{resp.text}</div>', unsafe_allow_html=True)
-                except Exception as e: st.error("Error.")
+                except Exception as e: 
+                    st.error(f"Error: {e}")
 
 # --- 8. STUDENT LOUNGE (LIVE CHAT) ---
 if "Student Lounge" in app_mode:
+    # Sync seen messages to clear notification badge
     st.session_state.last_seen_messages = total_messages
     st.markdown('<p class="pro-header">💬 Student Lounge</p>', unsafe_allow_html=True)
     
@@ -788,14 +721,24 @@ if "Student Lounge" in app_mode:
                 sender = msg['user']
                 sender_data = all_users.get(sender, {})
                 sender_avatar = sender_data.get("avatar")
-                avatar_html = f'<img src="data:image/jpeg;base64,{sender_avatar}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; margin-right: 8px; border: 1px solid #10b981;">' if sender_avatar else f'<div style="width: 28px; height: 28px; border-radius: 50%; background-color: #334155; display: flex; align-items: center; justify-content: center; margin-right: 8px; font-size: 14px; font-weight: bold; color: white;">{sender[0].upper()}</div>'
+                
+                # Render Avatar
+                if sender_avatar:
+                    avatar_html = f'<img src="data:image/jpeg;base64,{sender_avatar}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; margin-right: 8px; border: 1px solid #10b981;">'
+                else:
+                    avatar_html = f'<div style="width: 28px; height: 28px; border-radius: 50%; background-color: #334155; display: flex; align-items: center; justify-content: center; margin-right: 8px; font-size: 14px; font-weight: bold; color: white;">{sender[0].upper()}</div>'
+                
+                # Tagging logic
                 is_tagged = username and f"@{username}".lower() in msg['text'].lower()
                 css_class = "community-msg tagged-msg" if is_tagged else "community-msg"
                 display_text = msg['text'].replace(f"@{username}", f'<span class="tagged-text">@{username}</span>') if is_tagged else msg['text']
                 
                 st.markdown(f"""
                     <div class="{css_class}">
-                        <div style="display: flex; align-items: center; margin-bottom: 4px;">{avatar_html}<div class="community-user">@{sender}</div></div>
+                        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                            {avatar_html}
+                            <div class="community-user">@{sender}</div>
+                        </div>
                         <div class="community-text">{display_text}</div>
                     </div>
                 """, unsafe_allow_html=True)
@@ -809,18 +752,21 @@ if "Student Lounge" in app_mode:
         st.session_state.last_seen_messages = len(current_chat)
         st.rerun() 
 
-# --- 9. LEADERBOARD ---
+# --- 9. LEADERBOARD (FIXED) ---
 if app_mode == "Leaderboard":
     st.markdown('<p class="pro-header">🏆 Global Leaderboard</p>', unsafe_allow_html=True)
     db = load_users()
-    lb_data = [[user, data["score"]] for user, data in db.items()]
+    
+    # FIXED: Added .get("score", 0) to handle users who haven't earned XP yet
+    lb_data = [[user, data.get("score", 0)] for user, data in db.items()]
+    
     global_lb = pd.DataFrame(lb_data, columns=['Name', 'Score']).sort_values(by='Score', ascending=False).reset_index(drop=True)
     st.dataframe(global_lb, hide_index=True, use_container_width=True)
+
 # --- 🌿 VENDOR HUB (STUDENT MARKETPLACE) ---
 if app_mode == "🌿 Vendor Hub":
     st.markdown('<p class="pro-header">🛍️ Student Marketplace</p>', unsafe_allow_html=True)
-    
-    st.warning("🛡️ **Safety Tip:** Always meet at a busy UNIZIK spot (like the Faculty entrance) to exchange items. Never pay before seeing the product!")
+    st.warning("🛡️ **Safety Tip:** Always meet at a busy UNIZIK spot to exchange items. Never pay before seeing the product!")
 
     tab1, tab2 = st.tabs(["🛒 Buy Items", "➕ Sell Something"])
 
@@ -835,24 +781,22 @@ if app_mode == "🌿 Vendor Hub":
                     if item.get("image"):
                         img_html = f'<img src="data:image/jpeg;base64,{item["image"]}" style="width:100%; border-radius:10px; margin-bottom:10px;">'
 
-    st.markdown(f"""<div class="glass-container" style="margin-bottom: 15px; border: 1px solid #3b82f655; padding: 10px; border-radius: 12px;">
-{img_html}
-<h4 style="color: #3b82f6; margin-bottom: 5px;">{item['name']}</h4>
-<p style="font-size: 1.2rem; font-weight: bold; color: #10b981; margin: 0;">₦{item['price']}</p>
-<p style="font-size: 0.85rem; opacity: 0.8;"><b>Condition:</b> {item['dosage_form']} | <b>Seller:</b> @{item['vendor']}</p>
-<p style="font-size: 0.9rem; margin-top: 5px;">{item['treats']}</p>
-    </div>""", unsafe_allow_html=True)
+                    st.markdown(f"""
+                        <div class="glass-container" style="margin-bottom: 15px; border: 1px solid #3b82f655; padding: 10px; border-radius: 12px;">
+                            {img_html}
+                            <h4 style="color: #3b82f6; margin-bottom: 5px;">{item['name']}</h4>
+                            <p style="font-size: 1.2rem; font-weight: bold; color: #10b981; margin: 0;">₦{item['price']}</p>
+                            <p style="font-size: 0.85rem; opacity: 0.8;"><b>Condition:</b> {item.get('dosage_form', 'N/A')} | <b>Seller:</b> @{item['vendor']}</p>
+                            <p style="font-size: 0.9rem; margin-top: 5px;">{item['treats']}</p>
+                        </div>
+                    """, unsafe_allow_html=True)
 
-    raw_phone = item.get('link', '').replace('+', '').replace(' ', '')
-    if raw_phone.startswith('0'):
-        wa_phone = "234" + raw_phone[1:]
-    else:
-        wa_phone = raw_phone
-    msg = f"Hello, I am interested in your {item['name']} on Desprix Med AI."
-    st.link_button(f"💬 Chat with @{item['vendor']}", f"https://api.whatsapp.com/send?phone={wa_phone}&text={msg}", use_container_width=True)
+                    # WhatsApp Link Processing
+                    raw_phone = item.get('link', '').replace('+', '').replace(' ', '')
+                    wa_phone = "234" + raw_phone[1:] if raw_phone.startswith('0') else raw_phone
+                    msg_text = f"Hello, I am interested in your {item['name']} on Desprix Med AI."
+                    st.link_button(f"💬 Chat with @{item['vendor']}", f"https://api.whatsapp.com/send?phone={wa_phone}&text={msg_text}", use_container_width=True)
                             
-                    
-                
     with tab2:
         st.subheader("List Your Item")
         if not user_data.get('phone'):
@@ -867,10 +811,7 @@ if app_mode == "🌿 Vendor Hub":
                 
                 if st.form_submit_button("🚀 Submit for Approval"):
                     if item_name and price:
-                        img_str = None
-                        if prod_pic:
-                            img_str = base64.b64encode(prod_pic.read()).decode('utf-8')
-                        
+                        img_str = base64.b64encode(prod_pic.read()).decode('utf-8') if prod_pic else None
                         pending_db = load_pending_products()
                         pending_db.append({
                             "name": item_name, "price": price, "dosage_form": condition,
@@ -880,7 +821,8 @@ if app_mode == "🌿 Vendor Hub":
                         save_pending_products(pending_db)
                         st.success("Sent to Admin for approval! ✅")
                         st.rerun()
-# --- 🛡️ ADMIN DASHBOARD ---
+
+# --- 🛡️ ADMIN DASHBOARD (SECURITY) ---
 if app_mode == "🛡️ Admin Dashboard":
     st.markdown('<p class="pro-header">🛡️ Admin Control Center</p>', unsafe_allow_html=True)
     pending_items = load_pending_products()
@@ -894,17 +836,23 @@ if app_mode == "🛡️ Admin Dashboard":
                 st.write(f"**Item:** {item['name']} | **Price:** ₦{item['price']}")
                 st.write(f"**Vendor:** @{item['vendor']} | **Details:** {item['treats']}")
                 
-                if st.button(f"✅ Approve {item['name']}", key=f"app_admin_{i}"):
-                    # Move to Approved
+                col_a, col_r = st.columns(2)
+                if col_a.button(f"✅ Approve {item['name']}", key=f"app_admin_{i}"):
                     approved = load_approved_products()
                     approved.append(item)
                     save_approved_products(approved)
-                    # Remove from Pending
                     pending_items.pop(i)
                     save_pending_products(pending_items)
                     st.success("Item is now LIVE! 🚀")
                     st.rerun()
+                
+                if col_r.button(f"❌ Reject {item['name']}", key=f"rej_admin_{i}"):
+                    pending_items.pop(i)
+                    save_pending_products(pending_items)
+                    st.warning("Item rejected.")
+                    st.rerun()
 
+# --- SIDEBAR FOOTER ---
 st.sidebar.divider()
 st.sidebar.caption(f"{username}'s Secured Session | Desprix Crew ©2026")
-                
+    
