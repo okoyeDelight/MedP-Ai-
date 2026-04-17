@@ -550,21 +550,29 @@ if app_mode == "Exam Mastery Hub":
     
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["📅 Daily Quiz", "🎤 Audio Analyst", "📝 Note-to-CBT", "✍️ Note-to-Theory", "📂 Saved Materials"])
 
-    with tab1:
-        st.subheader("Daily Pharmacy CBT Drill")
-        quiz_pool = [
-            {"q": "Which drug class inhibits cell wall synthesis?", "opts": ["NSAIDs", "Penicillins", "Statins", "Macrolides"], "ans": "Penicillins"},
-            {"q": "What is the primary mechanism of action of Omeprazole?", "opts": ["H2 Antagonist", "Proton Pump Inhibitor", "Antacid", "Enzyme Inducer"], "ans": "Proton Pump Inhibitor"},
-            {"q": "Which of these is a loop diuretic?", "opts": ["Furosemide", "Hydrochlorothiazide", "Spironolactone", "Amiloride"], "ans": "Furosemide"},
-            {"q": "What is the specific antidote for Paracetamol toxicity?", "opts": ["Naloxone", "Flumazenil", "N-acetylcysteine", "Atropine"], "ans": "N-acetylcysteine"},
-            {"q": "Which drug is a first-line treatment for uncomplicated malaria in Nigeria?", "opts": ["Chloroquine", "Artemisinin-based Combination Therapy (ACT)", "Quinine", "Sulfadoxine"], "ans": "Artemisinin-based Combination Therapy (ACT)"},
-            {"q": "What is the most common side effect of ACE inhibitors like Lisinopril?", "opts": ["Dry cough", "Weight gain", "Insomnia", "Tachycardia"], "ans": "Dry cough"},
-            {"q": "Which vitamin deficiency causes scurvy?", "opts": ["Vitamin A", "Vitamin B12", "Vitamin C", "Vitamin D"], "ans": "Vitamin C"}
-        ]
-        day_index = datetime.date.today().toordinal() % len(quiz_pool)
-        daily_q = quiz_pool[day_index]
-        
-        st.info(f"**Question of the Day ({datetime.date.today().strftime('%b %d')}):**")
+        with tab1:
+        st.subheader("Daily Pharmacy AI Drill")
+
+        # 1. GENERATE OR LOAD THE DYNAMIC QUESTION
+        if 'dynamic_quiz' not in st.session_state:
+            with st.spinner("AI is crafting a unique medical case for you..."):
+                try:
+                    model = genai.GenerativeModel('models/gemini-2.5-flash')
+                    prompt = """Generate exactly ONE high-level pharmaceutical or medical case study MCQ. 
+                    Format as a raw JSON object only: 
+                    {"q": "The question/case study text...", "opts": ["Option A", "Option B", "Option C", "Option D"], "ans": "The correct option text"}"""
+                    
+                    resp = model.generate_content(prompt)
+                    # Clean the response and load JSON
+                    raw_text = resp.text.strip().removeprefix('```json').removesuffix('```').strip()
+                    st.session_state.dynamic_quiz = json.loads(raw_text)
+                except Exception as e:
+                    st.error("Could not fetch AI question. Using backup.")
+                    st.session_state.dynamic_quiz = {"q": "Which drug is a loop diuretic?", "opts": ["Furosemide", "Amiloride"], "ans": "Furosemide"}
+
+        daily_q = st.session_state.dynamic_quiz
+
+        st.info(f"**Case Study for {datetime.date.today().strftime('%b %d')}:**")
         st.write(f"### {daily_q['q']}")
         
         if not st.session_state.quiz_completed_today:
@@ -574,15 +582,21 @@ if app_mode == "Exam Mastery Hub":
                     st.success("✅ Correct! +10 XP")
                     st.session_state.quiz_completed_today = True
                     users_db = load_users()
-                    users_db[username]["score"] += 10
+                    # Safe score update (the fix you made)
+                    users_db[username]["score"] = users_db[username].get("score", 0) + 10
                     save_users(users_db)
                     st.rerun()
                 else:
-                    st.error(f"❌ Wrong! The correct answer was {daily_q['ans']}.")
+                    st.error(f"❌ Wrong! The correct answer was: {daily_q['ans']}")
                     st.session_state.quiz_completed_today = True
+                    st.rerun() # Added to refresh the completion state immediately
         else:
-            st.success("You have already completed today's quiz!")
-
+            st.success("You have completed your drill for today!")
+            if st.button("Try a new Case (New Session)"):
+                del st.session_state.dynamic_quiz
+                st.session_state.quiz_completed_today = False
+                st.rerun()
+                    
     with tab2:
         st.subheader("Lecture Secret Extractor")
         aud = st.file_uploader("Upload Lecture Audio", type=['mp3', 'wav', 'm4a'])
