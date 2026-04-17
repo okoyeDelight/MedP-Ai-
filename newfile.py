@@ -550,7 +550,7 @@ if app_mode == "Exam Mastery Hub":
     
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["📅 Daily Quiz", "🎤 Audio Analyst", "📝 Note-to-CBT", "✍️ Note-to-Theory", "📂 Saved Materials"])
 
-        with tab1:
+    with tab1:
         st.subheader("Daily Pharmacy AI Drill")
 
         # 1. GENERATE OR LOAD THE DYNAMIC QUESTION
