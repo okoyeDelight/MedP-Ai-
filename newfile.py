@@ -182,6 +182,7 @@ if not st.session_state.get('logged_in_user'):
                     else:
                         users_db[reg_user] = {
                             "password": reg_pass,
+                            "score" : 0,
                             "saved_cbt": [],
                             "saved_theory": []
                         }
@@ -328,7 +329,7 @@ if app_mode == "Home":
     active_query = user_query or quick_query
     
     if active_query:
-        log_user_history(username, f"Chatted: {active_query[:20]}...")
+        log_user_history(username, f"Asked AI: {active_query}") 
         st.markdown(f'<div style="display: flex; justify-content: flex-end;"><div class="user-bubble"><strong>You:</strong> {active_query}</div></div>', unsafe_allow_html=True)
         with st.spinner("Med AI is thinking..."):
             try:
@@ -836,36 +837,57 @@ if app_mode == "🌿 Vendor Hub":
                         st.success("Sent to Admin for approval! ✅")
                         st.rerun()
 
-# --- 🛡️ ADMIN DASHBOARD (SECURITY) ---
+# --- 🛡️ ADMIN DASHBOARD (MASTER CONTROL) ---
 if app_mode == "🛡️ Admin Dashboard":
-    st.markdown('<p class="pro-header">🛡️ Admin Control Center</p>', unsafe_allow_html=True)
-    pending_items = load_pending_products()
+    st.markdown('<p class="pro-header">🛡️ Admin Command Center</p>', unsafe_allow_html=True)
     
-    if not pending_items:
-        st.success("No items to approve. ✅")
-    else:
-        st.info(f"Reviewing {len(pending_items)} items...")
-        for i, item in enumerate(pending_items):
-            with st.container():
-                st.write(f"**Item:** {item['name']} | **Price:** ₦{item['price']}")
-                st.write(f"**Vendor:** @{item['vendor']} | **Details:** {item['treats']}")
-                
-                col_a, col_r = st.columns(2)
-                if col_a.button(f"✅ Approve {item['name']}", key=f"app_admin_{i}"):
-                    approved = load_approved_products()
-                    approved.append(item)
-                    save_approved_products(approved)
-                    pending_items.pop(i)
-                    save_pending_products(pending_items)
-                    st.success("Item is now LIVE! 🚀")
-                    st.rerun()
-                
-                if col_r.button(f"❌ Reject {item['name']}", key=f"rej_admin_{i}"):
-                    pending_items.pop(i)
-                    save_pending_products(pending_items)
-                    st.warning("Item rejected.")
-                    st.rerun()
+    # Organize Admin tools into Tabs
+    tab_logs, tab_market, tab_stats = st.tabs(["📜 User Question Logs", "📦 Market Approvals", "📊 Student XP"])
 
+    with tab_logs:
+        st.subheader("View Student AI History")
+        # Load fresh user data
+        current_users = load_users()
+        selected_student = st.selectbox("Select a Student to view their questions:", list(current_users.keys()))
+        
+        if selected_student:
+            user_history = current_users[selected_student].get("history", [])
+            if not user_history:
+                st.info(f"@{selected_student} has not asked any questions yet.")
+            else:
+                for entry in user_history:
+                    st.markdown(f"""
+                        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border-left: 4px solid #3b82f6; margin-bottom: 8px;">
+                            {entry}
+                        </div>
+                    """, unsafe_allow_html=True)
+
+    with tab_market:
+        st.subheader("Marketplace Review")
+        pending_items = load_pending_products()
+        if not pending_items:
+            st.success("No items to approve. ✅")
+        else:
+            for i, item in enumerate(pending_items):
+                with st.container():
+                    st.write(f"**Item:** {item['name']} | **Price:** ₦{item['price']}")
+                    st.write(f"**Vendor:** @{item['vendor']} | **Details:** {item['treats']}")
+                    if st.button(f"✅ Approve {item['name']}", key=f"app_admin_{i}"):
+                        approved = load_approved_products()
+                        approved.append(item)
+                        save_approved_products(approved)
+                        pending_items.pop(i)
+                        save_pending_products(pending_items)
+                        st.success("Item is now LIVE! 🚀")
+                        st.rerun()
+
+    with tab_stats:
+        st.subheader("Student Rankings")
+        db = load_users()
+        lb_data = [[u, d.get("score", 0), d.get("level", "N/A")] for u, d in db.items()]
+        df = pd.DataFrame(lb_data, columns=['Name', 'XP', 'Level']).sort_values(by='XP', ascending=False)
+        st.table(df)
+        
 # --- SIDEBAR FOOTER ---
 st.sidebar.divider()
 st.sidebar.caption(f"{username}'s Secured Session | Desprix Crew ©2026")
