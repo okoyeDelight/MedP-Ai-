@@ -42,7 +42,58 @@ def save_users(data): save_json(USERS_DB, data)
 
 def load_pending_products(): return load_json(PENDING_PRODUCTS_DB, [])
 def save_pending_products(data): save_json(PENDING_PRODUCTS_DB, data)
-
+def render_dc_intro():
+    st.markdown("""
+<div class="dc-intro-shell">
+  <div class="dc-grid"></div>
+  <div class="dc-scan-line"></div>
+  <div class="dc-orb dc-orb-one"></div>
+  <div class="dc-orb dc-orb-two"></div>
+  <div class="dc-scan"></div>
+  <div class="dc-core">
+    <div class="dc-ring dc-ring-one"></div>
+    <div class="dc-ring dc-ring-two"></div>
+    <div class="dc-ring dc-ring-three"></div>
+    <div class="dc-mark" data-text="DC">DC</div>
+    <div class="dc-subtitle">Desprix Crew</div>
+    <div class="dc-loader">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+</div>
+<style>
+  .dc-intro-shell {
+    position: fixed; inset: 0; z-index: 999999; display: grid; place-items: center; overflow: hidden;
+    background: radial-gradient(circle at 50% 45%, rgba(59, 130, 246, 0.22), transparent 24%),
+      linear-gradient(135deg, #030712 0%, #06111f 45%, #020617 100%);
+    animation: dcShellExit 1.1s ease 4.9s forwards; pointer-events: none;
+  }
+  .dc-scan-line {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(59, 130, 246, 0.05) 51%);
+    background-size: 100% 4px; z-index: 10; animation: dcFlicker 0.15s infinite;
+  }
+  .dc-mark {
+    position: relative; font-family: Poppins, sans-serif; font-size: clamp(6rem, 19vw, 12rem); font-weight: 900;
+    color: #f8fafc; text-shadow: 0 0 18px rgba(96, 165, 250, 0.85);
+    animation: dcGlitch 2.4s steps(1, end) infinite, dcRevealText 1.5s ease forwards;
+  }
+  @keyframes dcShellExit { 0% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+  @keyframes dcFlicker { 0% { opacity: 0.95; } 100% { opacity: 1; } }
+  @keyframes dcSpin { to { transform: rotate(360deg); } }
+  @keyframes dcRevealText { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+  /* --- THE CSS ENGINE (KEYFRAMES) --- */
+  @keyframes dcGridMove { to { background-position: 0 92px, 92px 0; } }
+  @keyframes dcOrbOne { to { transform: translate(8vmax, 6vmax) scale(1.12); } }
+  @keyframes dcOrbTwo { to { transform: translate(-8vmax, -5vmax) scale(1.18); } }
+  @keyframes dcScan { 0% { top: -20%; opacity: 0; } 100% { top: 110%; opacity: 0; } }
+  @keyframes dcPulseRing { 0%, 100% { transform: scale(0.94); opacity: 0.42; } 50% { transform: scale(1.06); opacity: 1; } }
+  @keyframes dcLoad { 0%, 100% { transform: scaleX(0.35); opacity: 0.38; } 50% { transform: scaleX(1); opacity: 1; } }
+  @keyframes dcSpinReverse { to { transform: rotate(-360deg); } }
+  @keyframes dcSpin { to { transform: rotate(360deg); } }
+  </style>
+""", unsafe_allow_html=True)
+                
 def load_approved_products(): 
     default_product = [{
         "name": "NaturCure Malaria Cleanser", 
@@ -144,6 +195,7 @@ if "dc_intro_played" not in st.session_state:
 if not st.session_state.dc_intro_played:
     render_dc_intro()
     st.session_state.dc_intro_played = True
+    time.sleep(5)  # Let the animation play for 5 seconds
     st.rerun() # Forces a refresh to clear the intro and show the login
     
 # --- 1. AUTO-LOGIN LOGIC ---
