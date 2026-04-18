@@ -137,7 +137,15 @@ if 'last_seen_messages' not in st.session_state:
     st.session_state.last_seen_messages = 0
 users_db = load_json(USERS_DB, {})
 total_messages = len(load_chat())
+# --- MANUALLY TRIGGER THE TECH INTRO ---
+if "dc_intro_played" not in st.session_state:
+    st.session_state.dc_intro_played = False
 
+if not st.session_state.dc_intro_played:
+    render_dc_intro()
+    st.session_state.dc_intro_played = True
+    st.rerun() # Forces a refresh to clear the intro and show the login
+    
 # --- 1. AUTO-LOGIN LOGIC ---
 query_params = st.query_params
 if "user" in query_params and not st.session_state.get('logged_in_user'):
