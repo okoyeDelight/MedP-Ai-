@@ -44,54 +44,95 @@ def load_pending_products(): return load_json(PENDING_PRODUCTS_DB, [])
 def save_pending_products(data): save_json(PENDING_PRODUCTS_DB, data)
 def render_dc_intro():
     st.markdown("""
-<div class="dc-intro-shell">
-  <div class="dc-grid"></div>
-  <div class="dc-scan-line"></div>
-  <div class="dc-orb dc-orb-one"></div>
-  <div class="dc-orb dc-orb-two"></div>
-  <div class="dc-scan"></div>
-  <div class="dc-core">
-    <div class="dc-ring dc-ring-one"></div>
-    <div class="dc-ring dc-ring-two"></div>
-    <div class="dc-ring dc-ring-three"></div>
-    <div class="dc-mark" data-text="DC">DC</div>
-    <div class="dc-subtitle">Desprix Crew</div>
-    <div class="dc-loader">
-      <span></span><span></span><span></span><span></span><span></span>
+<div class="dc-master-wrapper">
+    <div class="dc-intro-shell">
+      <div class="dc-grid"></div>
+      <div class="dc-scan-line"></div>
+      <div class="dc-orb dc-orb-one"></div>
+      <div class="dc-orb dc-orb-two"></div>
+      <div class="dc-core">
+        <div class="dc-ring dc-ring-one"></div>
+        <div class="dc-ring dc-ring-two"></div>
+        <div class="dc-mark" data-text="DC">DC</div>
+        <div class="dc-subtitle">Desprix Crew</div>
+        <div class="dc-loader">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
     </div>
-  </div>
 </div>
 <style>
-  .dc-intro-shell {
-    position: fixed; inset: 0; z-index: 999999; display: grid; place-items: center; overflow: hidden;
-    background: radial-gradient(circle at 50% 45%, rgba(59, 130, 246, 0.22), transparent 24%),
-      linear-gradient(135deg, #030712 0%, #06111f 45%, #020617 100%);
-    animation: dcShellExit 1.1s ease 4.9s forwards; pointer-events: none;
+  /* FORCE FULL SCREEN OVERLAY */
+  .dc-master-wrapper {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 9999999;
+    background: #020617;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: dcFadeOut 1s ease 5s forwards;
   }
+
+  .dc-intro-shell {
+    position: relative;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at center, rgba(30, 58, 138, 0.3) 0%, transparent 70%);
+  }
+
+  .dc-grid {
+    position: absolute; inset: -50%;
+    background-image: 
+        linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+    transform: perspective(500px) rotateX(60deg);
+    animation: dcGridMove 4s linear infinite;
+  }
+
   .dc-scan-line {
     position: absolute; inset: 0;
-    background: linear-gradient(to bottom, transparent 50%, rgba(59, 130, 246, 0.05) 51%);
-    background-size: 100% 4px; z-index: 10; animation: dcFlicker 0.15s infinite;
+    background: linear-gradient(to bottom, transparent 50%, rgba(59, 130, 246, 0.03) 50%);
+    background-size: 100% 4px;
+    z-index: 5;
   }
+
+  .dc-orb {
+    position: absolute; width: 300px; height: 300px;
+    border-radius: 50%; filter: blur(60px); opacity: 0.4;
+  }
+  .dc-orb-one { background: #2563eb; top: 10%; left: 10%; animation: dcFloat 6s ease-in-out infinite alternate; }
+  .dc-orb-two { background: #10b981; bottom: 10%; right: 10%; animation: dcFloat 8s ease-in-out infinite alternate-reverse; }
+
+  .dc-core { position: relative; z-index: 10; text-align: center; }
+
   .dc-mark {
-    position: relative; font-family: Poppins, sans-serif; font-size: clamp(6rem, 19vw, 12rem); font-weight: 900;
-    color: #f8fafc; text-shadow: 0 0 18px rgba(96, 165, 250, 0.85);
-    animation: dcGlitch 2.4s steps(1, end) infinite, dcRevealText 1.5s ease forwards;
+    font-family: 'Poppins', sans-serif;
+    font-size: 100px; font-weight: 900; color: #f8fafc;
+    letter-spacing: -5px; line-height: 1;
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(16, 185, 129, 0.4);
+    animation: dcGlitch 2s infinite;
   }
-  @keyframes dcShellExit { 0% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
-  @keyframes dcFlicker { 0% { opacity: 0.95; } 100% { opacity: 1; } }
-  @keyframes dcSpin { to { transform: rotate(360deg); } }
-  @keyframes dcRevealText { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
-  /* --- THE CSS ENGINE (KEYFRAMES) --- */
-  @keyframes dcGridMove { to { background-position: 0 92px, 92px 0; } }
-  @keyframes dcOrbOne { to { transform: translate(8vmax, 6vmax) scale(1.12); } }
-  @keyframes dcOrbTwo { to { transform: translate(-8vmax, -5vmax) scale(1.18); } }
-  @keyframes dcScan { 0% { top: -20%; opacity: 0; } 100% { top: 110%; opacity: 0; } }
-  @keyframes dcPulseRing { 0%, 100% { transform: scale(0.94); opacity: 0.42; } 50% { transform: scale(1.06); opacity: 1; } }
-  @keyframes dcLoad { 0%, 100% { transform: scaleX(0.35); opacity: 0.38; } 50% { transform: scaleX(1); opacity: 1; } }
-  @keyframes dcSpinReverse { to { transform: rotate(-360deg); } }
-  @keyframes dcSpin { to { transform: rotate(360deg); } }
-  </style>
+
+  .dc-subtitle {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px; color: #94a3b8;
+    letter-spacing: 5px; text-transform: uppercase; margin-top: 10px;
+  }
+
+  /* KEYFRAMES FOR MOVEMENT */
+  @keyframes dcGridMove { from { background-position: 0 0; } to { background-position: 0 40px; } }
+  @keyframes dcFloat { from { transform: translate(0,0); } to { transform: translate(30px, 50px); } }
+  @keyframes dcFadeOut { to { opacity: 0; visibility: hidden; } }
+  @keyframes dcGlitch {
+    0%, 100% { transform: translate(0); }
+    92% { transform: translate(2px, -1px); }
+    95% { transform: translate(-2px, 1px); }
+  }
+</style>
 """, unsafe_allow_html=True)
                 
 def load_approved_products(): 
