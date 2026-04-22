@@ -179,7 +179,7 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&display=swap');
 
-    /* UI FIX: MAKE THE 3-LINE MENU BUTTON VISIBLE & BLUE */
+    /* UI FIX: MAKE THE 3-LINE MENU BUTTON VISIBLE */
     header[data-testid="stHeader"] {
         visibility: visible !important;
         display: block !important;
@@ -187,36 +187,173 @@ st.markdown("""
     }
 
     button[kind="header"] {
-        background-color: #3b82f6 !important;
+        background-color: #047857 !important;
         color: white !important;
         border: 2px solid white !important;
         border-radius: 8px !important;
-        box-shadow: 0 0 10px rgba(59, 130, 246, 0.8) !important;
+        box-shadow: 0 0 10px rgba(4, 120, 87, 0.5) !important;
     }
 
-    [data-testid="stAppViewContainer"] { background-color: #0b0f19; color: #f8fafc; }
-    [data-testid="stSidebar"] { background-color: #111827; border-right: 1px solid #1f2937; }
+    [data-testid="stAppViewContainer"] { background-color: #F8FAFC; color: #0F172A; font-family: 'Poppins', sans-serif; }
+    [data-testid="stSidebar"] { display: none !important; } /* Hide sidebar completely for dashboard feel */
 
+    /* Typography & Spacing */
+    .block-container { padding-top: 1rem !important; padding-bottom: 80px !important; max-width: 1200px; }
+
+    /* Custom Streamlit Button */
     .stButton>button {
         width: 100%; border-radius: 25px; padding: 12px 10px;
-        background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px);
-        color: #e2e8f0; font-size: 14px; font-weight: 500;
-        border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); margin-bottom: 8px;
+        background: #047857; color: white; font-size: 14px; font-weight: 500;
+        border: none; box-shadow: 0 4px 6px rgba(4,120,87,0.2);
+        transition: all 0.2s; margin-bottom: 8px;
+    }
+    .stButton>button:hover { background: #064E3B; color: white; transform: translateY(-1px); }
+    .stButton>button:active { background: #065F46 !important; color: white !important; }
+
+    /* Bottom Navigation Bar targeting native Streamlit blocks */
+    /* Target the exact container holding the nav columns to pin it */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(div.stButton button p:contains("Home")) {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #FFFFFF;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        z-index: 9999;
+        border-top: 1px solid #E2E8F0;
+        padding: 10px 0;
+        max-width: 100% !important;
     }
 
-    .hello-text { overflow: hidden; border-right: 3px solid #3b82f6; white-space: nowrap; margin: 0 auto; font-size: 2.5rem; font-weight: 800; color: white; width: 0; animation: typing 2s steps(20, end) forwards, blink-caret .75s step-end infinite; }
-    @keyframes typing { from { width: 0 } to { width: 100% } }
-    @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #3b82f6 } }
+    /* Make the nav buttons look like icons */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(div.stButton button p:contains("Home")) .stButton > button {
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: #64748B !important;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 5px;
+        height: auto;
+        transition: color 0.2s;
+    }
 
-    .user-bubble { background: linear-gradient(135deg, #3b82f6, #1d4ed8); padding: 14px 18px; border-radius: 20px 20px 5px 20px; color: white; margin-bottom: 10px; align-self: flex-end; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 80%; }
-    .ai-bubble { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(12px); padding: 18px 22px; border-radius: 20px 20px 20px 5px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); line-height: 1.6; }
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(div.stButton button p:contains("Home")) .stButton > button:hover {
+        color: #047857 !important;
+        transform: none !important;
+    }
+
+    /* Hero Section */
+    .hero-container {
+        background: linear-gradient(135deg, #047857 0%, #064E3B 100%);
+        border-radius: 20px;
+        padding: 40px 20px;
+        color: white;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(4, 120, 87, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-container::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-image: url('https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&w=1000&q=80');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.15;
+        z-index: 0;
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero-title { font-weight: 800; font-size: 26px; line-height: 1.2; margin-bottom: 10px; color: #FFFFFF; font-family: 'Poppins', sans-serif;}
+    .hero-subtitle { font-size: 14px; opacity: 0.9; margin-bottom: 20px; color: #D1FAE5; }
+
+    /* Target Hero Buttons natively */
+    div[data-testid="stHorizontalBlock"]:has(button p:contains("Drug Lookup")) .stButton > button:first-child {
+        background: #D97706 !important; /* Gold */
+        color: white !important;
+        border: none !important; padding: 10px 20px !important; border-radius: 30px !important;
+        font-weight: 600 !important; font-size: 14px !important;
+        box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3) !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(button p:contains("Drug Lookup")) .stButton > button:first-child:hover { background: #B45309 !important; }
+
+    div[data-testid="stHorizontalBlock"]:has(button p:contains("Check NAFDAC")) div[data-testid="column"]:nth-child(2) .stButton > button {
+        background: rgba(255,255,255,0.2) !important;
+        box-shadow: none !important;
+        border: none !important; padding: 10px 20px !important; border-radius: 30px !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(button p:contains("Check NAFDAC")) div[data-testid="column"]:nth-child(2) .stButton > button:hover { background: rgba(255,255,255,0.3) !important; }
+
+    /* Target the Services Grid Columns natively to style them as cards */
+    /* Use direct child selectors to prevent global CSS bleed to the root app containers */
+    div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:has(div.stButton button p:contains("Open")) {
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 20px 15px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        border: 1px solid #E2E8F0;
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin-bottom: 15px;
+    }
+    div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:has(div.stButton button p:contains("Open")):hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(4, 120, 87, 0.1);
+        border-color: #34D399;
+    }
+
+    .service-icon { font-size: 32px; margin-bottom: 10px; color: #047857; text-align: center; }
+    .service-title { font-weight: 700; font-size: 14px; margin-bottom: 5px; color: #0F172A; text-align: center; }
+    .service-desc { font-size: 12px; color: #64748B; line-height: 1.4; margin-bottom: 15px; text-align: center; }
+
+    /* Make the buttons inside these cards look embedded */
+    div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:has(div.stButton button p:contains("Open")) .stButton > button {
+        background: #F1F5F9 !important;
+        color: #047857 !important;
+        border-radius: 8px !important;
+        padding: 5px !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+    div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:has(div.stButton button p:contains("Open")) .stButton > button:hover { background: #E2E8F0 !important; }
+
+    /* Featured Work Scroll */
+    .featured-scroll {
+        display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px;
+        scrollbar-width: none;
+    }
+    .featured-scroll::-webkit-scrollbar { display: none; }
+    .featured-card {
+        flex: 0 0 200px;
+        background: #FFFFFF; border-radius: 12px; overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #E2E8F0;
+    }
+    .featured-img { width: 100%; height: 100px; object-fit: cover; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 30px;}
+    .featured-info { padding: 12px; }
+    .featured-title { font-weight: 600; font-size: 13px; color: #0F172A; margin-bottom: 4px; }
+    .featured-tag { font-size: 10px; color: #D97706; font-weight: 600; text-transform: uppercase; }
+
+    /* Header */
+    .custom-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 20px;
+    }
+    .header-greeting { font-size: 18px; font-weight: 700; color: #0F172A; margin: 0; line-height: 1.2; }
+    .header-sub { font-size: 13px; color: #64748B; margin: 0; }
+    .header-profile { width: 40px; height: 40px; border-radius: 50%; background: #047857; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0; }
     
-    .glass-container { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; margin-bottom: 20px; }
+    /* Bubbles & Containers */
+    .user-bubble { background: linear-gradient(135deg, #047857, #064E3B); padding: 14px 18px; border-radius: 20px 20px 5px 20px; color: white; margin-bottom: 10px; align-self: flex-end; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 80%; }
+    .ai-bubble { background: #FFFFFF; padding: 18px 22px; border-radius: 20px 20px 20px 5px; color: #0F172A; border: 1px solid #E2E8F0; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); line-height: 1.6; }
+    .glass-container { background: #FFFFFF; border: 1px solid #E2E8F0; padding: 25px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+
+    /* Input Fields */
+    .stTextInput>div>div>input { border-radius: 12px; border: 1px solid #CBD5E1; padding: 12px; }
+    .stTextInput>div>div>input:focus { border-color: #047857; box-shadow: 0 0 0 2px rgba(4,120,87,0.2); }
     
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    .block-container {padding-top: 2rem !important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -344,11 +481,39 @@ if username == "MED AI":
 if username == "MED AI" and user_data.get('password') == "Desprix07!":
     nav_options.insert(0, "🛡️ Admin Dashboard")
 
-app_mode = st.sidebar.selectbox("Navigate", nav_options)
+if 'app_mode' not in st.session_state:
+    st.session_state.app_mode = "Home"
+
+def set_page(page_name):
+    st.session_state.app_mode = page_name
+
+app_mode = st.session_state.app_mode
+
+# Bottom Navigation native Streamlit buttons
+nav_container = st.container(border=True)
+with nav_container:
+    c1, c2, c3, c4, c5 = st.columns(5)
+    with c1:
+        if st.button("🏠\nHome", key="nav_home", use_container_width=True): set_page("Home"); st.rerun()
+    with c2:
+        if st.button("💊\nDrug Hub", key="nav_drug", use_container_width=True): set_page("Drug Hub"); st.rerun()
+    with c3:
+        if st.button("📚\nResources", key="nav_res", use_container_width=True): set_page("Exam Mastery Hub"); st.rerun()
+    with c4:
+        if st.button("🛒\nVendor Hub", key="nav_vendor", use_container_width=True): set_page("🌿 Vendor Hub"); st.rerun()
+    with c5:
+        if st.button("👤\nProfile", key="nav_prof", use_container_width=True): set_page("My Profile"); st.rerun()
+
 
 # --- MY PROFILE SECTION ---
 if app_mode == "My Profile":
     st.markdown('<p class="pro-header">👤 Student Profile</p>', unsafe_allow_html=True)
+    if username == "MED AI":
+        st.info("Admin Controls")
+        colA, colB = st.columns(2)
+        if colA.button("Go to 👑 Admin Dashboard", use_container_width=True): set_page("👑 Admin Dashboard"); st.rerun()
+        if colB.button("Go to 🛡️ Admin Dashboard", use_container_width=True): set_page("🛡️ Admin Dashboard"); st.rerun()
+
     with st.expander("📝 Edit My Details", expanded=True):
         new_bio = st.text_area("About Me", value=user_data.get("bio", ""), placeholder="e.g. Aspiring Pharmacist...")
         c1, c2 = st.columns(2)
@@ -395,47 +560,94 @@ if app_mode == "👑 Admin Dashboard" and username == "MED AI":
                 
 # --- 0. HOME ---
 if app_mode == "Home":
-    st.markdown('<br>', unsafe_allow_html=True)
-    st.markdown(f"<h3 style='color: #e2e8f0; font-weight: 700; margin-bottom: 0;'>Hello, {username}! 👋</h3>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #94a3b8; font-size: 14px; margin-top: 5px; margin-bottom: 20px;'>Explore your Med AI features below.</p>", unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #0f172a, #1e3a8a); padding: 30px 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #3b82f644; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
-        <h2 style="color: white; margin-top: 0px; font-weight: 800; font-size: 22px; line-height: 1.3;">MASTER YOUR<br>PHARMACY EXAMS.</h2>
-        <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 10px;">AI-powered remedies, CBTs, and drug research specifically tailored for UNIZIK pharmacy coursework.</p>
+    # Custom Header
+    st.markdown(f"""
+    <div class="custom-header">
+        <div>
+            <p class="header-greeting">Hello, {username}! 👋</p>
+            <p class="header-sub">Explore the MedP-AI toolbox.</p>
+        </div>
+        <div class="header-profile">{username[0].upper()}</div>
     </div>
     """, unsafe_allow_html=True)
 
-    quick_query = None
-    st.markdown("<h4 style='color: #e2e8f0; font-size: 18px; margin-bottom: 15px;'>Med AI Services</h4>", unsafe_allow_html=True)
+    # Placeholder Search Bar
+    st.text_input("Search", placeholder="Search drugs, remedies, or topics...", label_visibility="collapsed")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("""<div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none;"><h3>🔍</h3><h5 style="color: #f8fafc;">Verify NAFDAC</h5><p style="color: #94a3b8; font-size: 12px;">Check official registration.</p></div>""", unsafe_allow_html=True)
-        if st.button("Ask AI", key="n_btn", use_container_width=True): quick_query = "What is the official procedure to verify a NAFDAC registration number in Nigeria?"
-    with col2:
-        st.markdown("""<div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none;"><h3>🧬</h3><h5 style="color: #f8fafc;">Drug Mechanisms</h5><p style="color: #94a3b8; font-size: 12px;">Explain ACE Inhibitors.</p></div>""", unsafe_allow_html=True)
-        if st.button("Ask AI", key="d_btn", use_container_width=True): quick_query = "Explain the mechanism of action of ACE Inhibitors simply."
-        
-    col3, col4 = st.columns(2)
-    with col3:
-        st.markdown("""<div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none; margin-top: 10px;"><h3>🌿</h3><h5 style="color: #f8fafc;">Herbal Remedy</h5><p style="color: #94a3b8; font-size: 12px;">Safe home treatments.</p></div>""", unsafe_allow_html=True)
-        if st.button("Ask AI", key="h_btn", use_container_width=True): quick_query = "What are safe household herbal remedies for fever?"
-    with col4:
-        st.markdown("""<div style="background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid #334155; border-bottom: none; margin-top: 10px;"><h3>🎓</h3><h5 style="color: #f8fafc;">Study Planner</h5><p style="color: #94a3b8; font-size: 12px;">Build a study schedule.</p></div>""", unsafe_allow_html=True)
-        if st.button("Ask AI", key="s_btn", use_container_width=True): quick_query = "Create a weekly study plan for a 200-level pharmacy student focusing on anatomy and physiology."
+    # Hero Section
+    st.markdown("""
+    <div class="hero-container">
+        <div class="hero-content">
+            <h1 class="hero-title">EMPOWERING<br>HEALTHCARE IN<br>NIGERIA WITH AI.</h1>
+            <p class="hero-subtitle">Fast, accurate medical insights and resources tailored for professionals.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown('<div style="height: 80px;"></div>', unsafe_allow_html=True)
-    user_query = st.chat_input("Ask Med AI anything about medicine...")
-    active_query = user_query or quick_query
+    # Hero Buttons using Native Streamlit
+    hcol1, hcol2, hcol3 = st.columns([1, 1, 1])
+    with hcol1:
+        if st.button("Drug Lookup", key="hero_drug", use_container_width=True): set_page("Drug Hub"); st.rerun()
+    with hcol2:
+        if st.button("Check NAFDAC", key="hero_naf", use_container_width=True): set_page("NAFDAC Verifier"); st.rerun()
+
+    # Interactive Services Grid
+    st.markdown("<h4 style='color: #0F172A; font-size: 18px; margin-top: 20px; margin-bottom: 15px; font-weight: 700;'>MedP-AI Services</h4>", unsafe_allow_html=True)
     
-    if active_query:
-        log_user_history(username, f"Asked AI: {active_query}") 
-        st.markdown(f'<div style="display: flex; justify-content: flex-end;"><div class="user-bubble"><strong>You:</strong> {active_query}</div></div>', unsafe_allow_html=True)
-        with st.spinner("Med AI is thinking..."):
+    gcol1, gcol2 = st.columns(2)
+    with gcol1:
+        st.markdown("""<div class="service-icon">💊</div><div class="service-title">DRUG LOOKUP</div><div class="service-desc">Search generic and brand names, view drug details.</div>""", unsafe_allow_html=True)
+        if st.button("Open", key="grid_drug", use_container_width=True): set_page("Drug Hub"); st.rerun()
+        
+        st.markdown("""<div style="height: 20px;"></div><div class="service-icon">🎓</div><div class="service-title">EXAM MASTERY HUB</div><div class="service-desc">Access AI-powered exam drills and study tools.</div>""", unsafe_allow_html=True)
+        if st.button("Open", key="grid_exam", use_container_width=True): set_page("Exam Mastery Hub"); st.rerun()
+
+    with gcol2:
+        st.markdown("""<div class="service-icon">🛡️</div><div class="service-title">NAFDAC VERIFIER</div><div class="service-desc">Validate registration numbers for authenticity.</div>""", unsafe_allow_html=True)
+        if st.button("Open", key="grid_naf", use_container_width=True): set_page("NAFDAC Verifier"); st.rerun()
+
+        st.markdown("""<div style="height: 20px;"></div><div class="service-icon">🛒</div><div class="service-title">VENDOR CONNECT</div><div class="service-desc">Securely interact with drug vendors and buy.</div>""", unsafe_allow_html=True)
+        if st.button("Open", key="grid_vend", use_container_width=True): set_page("🌿 Vendor Hub"); st.rerun()
+
+    # Featured Work Highlights
+    st.markdown("<h4 style='color: #0F172A; font-size: 18px; margin-bottom: 15px; font-weight: 700;'>Featured Highlights</h4>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="featured-scroll">
+        <div class="featured-card">
+            <div class="featured-img" style="background: #D1FAE5;">📊</div>
+            <div class="featured-info">
+                <div class="featured-tag">UPDATE</div>
+                <div class="featured-title">Q3 Database Updated</div>
+            </div>
+        </div>
+        <div class="featured-card">
+            <div class="featured-img" style="background: #FEF3C7;">📚</div>
+            <div class="featured-info">
+                <div class="featured-tag">STUDY</div>
+                <div class="featured-title">Pharmacology Guide</div>
+            </div>
+        </div>
+        <div class="featured-card">
+            <div class="featured-img" style="background: #E0E7FF;">🤝</div>
+            <div class="featured-info">
+                <div class="featured-tag">COMMUNITY</div>
+                <div class="featured-title">Top Vendor Story</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div style="height: 40px;"></div>', unsafe_allow_html=True)
+    
+    # Keep chat functionality accessible for general queries
+    user_query = st.chat_input("Ask MedP-AI anything about medicine...")
+    if user_query:
+        log_user_history(username, f"Asked AI: {user_query}")
+        st.markdown(f'<div style="display: flex; justify-content: flex-end;"><div class="user-bubble"><strong>You:</strong> {user_query}</div></div>', unsafe_allow_html=True)
+        with st.spinner("MedP-AI is thinking..."):
             try:
                 model = genai.GenerativeModel('models/gemini-2.5-flash')
-                resp = model.generate_content(active_query)
+                resp = model.generate_content(user_query)
                 st.markdown(f'<div class="ai-bubble">{resp.text}</div>', unsafe_allow_html=True)
             except Exception as e: st.error(f"Connection Error: {e}")
                 
@@ -626,8 +838,9 @@ if app_mode == "👑 Admin Dashboard" and username == "AdminAyo":
         st.write(f"- {status}: **{prod['name']}** (Expires: {prod.get('expiry_date', 'N/A')}) | Vendor: @{prod.get('vendor')}")
 
 # --- 4. DRUG RESEARCHER & 5. NAFDAC ---
-if app_mode == "Drug Researcher (PRO)":
-    st.markdown('<p class="pro-header">🧪 Drug Research & API</p>', unsafe_allow_html=True)
+# Drug Hub is mapped to Drug Researcher functionality
+if app_mode in ["Drug Researcher (PRO)", "Drug Hub"]:
+    st.markdown('<p class="pro-header" style="font-weight:700; font-size:24px; color:#0F172A;">🧪 Drug Research & API</p>', unsafe_allow_html=True)
     drug = st.text_input("Enter Drug Name:", placeholder="e.g. Paracetamol", help="Type the generic or brand name of the drug.")
     if st.button("Analyze API", type="primary"):
         log_user_history(username, f"Analyzed Drug: {drug}")
@@ -636,7 +849,7 @@ if app_mode == "Drug Researcher (PRO)":
         st.markdown(f'<div class="glass-container">{resp.text}</div>', unsafe_allow_html=True)
 
 if app_mode == "NAFDAC Verifier":
-    st.markdown('<p class="pro-header">🔍 Live NAFDAC Verifier</p>', unsafe_allow_html=True)
+    st.markdown('<p class="pro-header" style="font-weight:700; font-size:24px; color:#0F172A;">🔍 Live NAFDAC Verifier</p>', unsafe_allow_html=True)
     reg = st.text_input("Enter NAFDAC Reg No:", placeholder="e.g. A4-1234", help="Enter the NAFDAC Registration Number to verify.")
     if st.button("Verify Registration", type="primary"):
         log_user_history(username, f"Verified NAFDAC: {reg}")
