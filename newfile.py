@@ -354,8 +354,8 @@ if app_mode == "My Profile":
         c1, c2 = st.columns(2)
         new_school = c1.text_input("University", value=user_data.get("school", "UNIZIK"))
         new_level = c2.selectbox("Level", ["100L", "200L", "300L", "400L", "500L", "600L"], index=1)
-        new_course = st.text_input("Course", value=user_data.get("course", "Pharmacy"))
-        new_phone = st.text_input("WhatsApp Number", value=user_data.get("phone", ""))
+        new_course = st.text_input("Course", value=user_data.get("course", "Pharmacy"), placeholder="e.g. Pharmacy", help="Your current course of study.")
+        new_phone = st.text_input("WhatsApp Number", value=user_data.get("phone", ""), placeholder="e.g. 08012345678", help="Required for Vendor Hub to connect with buyers.")
         
         if st.button("💾 Save Updates"):
             users_db[username].update({"bio":new_bio, "school":new_school, "level":new_level, "course":new_course, "phone":new_phone})
@@ -628,7 +628,7 @@ if app_mode == "👑 Admin Dashboard" and username == "AdminAyo":
 # --- 4. DRUG RESEARCHER & 5. NAFDAC ---
 if app_mode == "Drug Researcher (PRO)":
     st.markdown('<p class="pro-header">🧪 Drug Research & API</p>', unsafe_allow_html=True)
-    drug = st.text_input("Enter Drug Name:")
+    drug = st.text_input("Enter Drug Name:", placeholder="e.g. Paracetamol", help="Type the generic or brand name of the drug.")
     if st.button("Analyze API", type="primary"):
         log_user_history(username, f"Analyzed Drug: {drug}")
         model = genai.GenerativeModel('models/gemini-2.5-flash')
@@ -637,7 +637,7 @@ if app_mode == "Drug Researcher (PRO)":
 
 if app_mode == "NAFDAC Verifier":
     st.markdown('<p class="pro-header">🔍 Live NAFDAC Verifier</p>', unsafe_allow_html=True)
-    reg = st.text_input("Enter NAFDAC Reg No:")
+    reg = st.text_input("Enter NAFDAC Reg No:", placeholder="e.g. A4-1234", help="Enter the NAFDAC Registration Number to verify.")
     if st.button("Verify Registration", type="primary"):
         log_user_history(username, f"Verified NAFDAC: {reg}")
         try:
