@@ -207,7 +207,7 @@ st.markdown("""
         box-shadow: 0 0 10px rgba(4, 120, 87, 0.5) !important;
     }
 
-    [data-testid="stAppViewContainer"] { background-color: #F8FAFC; color: #0F172A; font-family: 'Poppins', sans-serif; }
+    [data-testid="stAppViewContainer"] { background-color: #0B0F19; color: #F8FAFC; font-family: 'Poppins', sans-serif; }
     [data-testid="stSidebar"] { display: none !important; } /* Hide sidebar completely for dashboard feel */
 
     /* Typography & Spacing */
@@ -216,56 +216,56 @@ st.markdown("""
     /* Custom Streamlit Button */
     .stButton>button {
         width: 100%; border-radius: 25px; padding: 12px 10px;
-        background: #047857; color: white; font-size: 14px; font-weight: 500;
-        border: none; box-shadow: 0 4px 6px rgba(4,120,87,0.2);
+        background: #10B981; color: white; font-size: 14px; font-weight: 500;
+        border: none; box-shadow: 0 4px 6px rgba(16,185,129,0.2);
         transition: all 0.2s; margin-bottom: 8px;
     }
-    .stButton>button:hover { background: #064E3B; color: white; transform: translateY(-1px); }
-    .stButton>button:active { background: #065F46 !important; color: white !important; }
+    .stButton>button:hover { background: #059669; color: white; transform: translateY(-1px); }
+    .stButton>button:active { background: #047857 !important; color: white !important; }
 
-    /* Bottom Navigation Bar targeting native Streamlit blocks */
-    /* Target the exact container holding the nav columns to pin it */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(div.stButton button p:contains("Home")) {
+    /* Bottom Navigation Bar targeting native Streamlit blocks using hidden marker */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.bottom-nav) {
         position: fixed;
-        bottom: 0;
+        bottom: 80px; /* Shifted up to avoid overlapping with native stBottomBlockContainer chat input */
         left: 0;
         right: 0;
-        background: #FFFFFF;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-        z-index: 9999;
-        border-top: 1px solid #E2E8F0;
+        background: #111827;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+        z-index: 99999; /* Ensure it is above other elements */
+        border-top: 1px solid #1F2937;
         padding: 10px 0;
         max-width: 100% !important;
     }
 
     /* Make the nav buttons look like icons */
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(div.stButton button p:contains("Home")) .stButton > button {
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.bottom-nav) .stButton > button {
         background-color: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        color: #64748B !important;
+        color: #94A3B8 !important;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         padding: 5px;
         height: auto;
         transition: color 0.2s;
     }
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(div.stButton button p:contains("Home")) .stButton > button:hover {
-        color: #047857 !important;
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.bottom-nav) .stButton > button:hover {
+        color: #10B981 !important;
         transform: none !important;
     }
 
     /* Hero Section */
     .hero-container {
-        background: linear-gradient(135deg, #047857 0%, #064E3B 100%);
+        background: linear-gradient(135deg, #111827 0%, #1F2937 100%);
         border-radius: 20px;
         padding: 40px 20px;
         color: white;
         text-align: center;
         margin-bottom: 30px;
-        box-shadow: 0 10px 25px rgba(4, 120, 87, 0.2);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         position: relative;
         overflow: hidden;
+        border: 1px solid #374151;
     }
     .hero-container::before {
         content: '';
@@ -274,62 +274,61 @@ st.markdown("""
         background-image: url('https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&w=1000&q=80');
         background-size: cover;
         background-position: center;
-        opacity: 0.15;
+        opacity: 0.1;
         z-index: 0;
     }
     .hero-content { position: relative; z-index: 1; }
-    .hero-title { font-weight: 800; font-size: 26px; line-height: 1.2; margin-bottom: 10px; color: #FFFFFF; font-family: 'Poppins', sans-serif;}
+    .hero-title { font-weight: 800; font-size: 26px; line-height: 1.2; margin-bottom: 10px; color: #F8FAFC; font-family: 'Poppins', sans-serif;}
     .hero-subtitle { font-size: 14px; opacity: 0.9; margin-bottom: 20px; color: #D1FAE5; }
 
-    /* Target Hero Buttons natively */
-    div[data-testid="stHorizontalBlock"]:has(button p:contains("Drug Lookup")) .stButton > button:first-child {
+    /* Target Hero Buttons natively via hidden markers */
+    div[data-testid="stVerticalBlock"]:has(.hero-btn-gold) .stButton > button {
         background: #D97706 !important; /* Gold */
         color: white !important;
         border: none !important; padding: 10px 20px !important; border-radius: 30px !important;
         font-weight: 600 !important; font-size: 14px !important;
         box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3) !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(button p:contains("Drug Lookup")) .stButton > button:first-child:hover { background: #B45309 !important; }
+    div[data-testid="stVerticalBlock"]:has(.hero-btn-gold) .stButton > button:hover { background: #B45309 !important; }
 
-    div[data-testid="stHorizontalBlock"]:has(button p:contains("Check NAFDAC")) div[data-testid="column"]:nth-child(2) .stButton > button {
-        background: rgba(255,255,255,0.2) !important;
+    div[data-testid="stVerticalBlock"]:has(.hero-btn-ghost) .stButton > button {
+        background: rgba(255,255,255,0.1) !important;
         box-shadow: none !important;
-        border: none !important; padding: 10px 20px !important; border-radius: 30px !important;
+        border: 1px solid rgba(255,255,255,0.2) !important; padding: 10px 20px !important; border-radius: 30px !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(button p:contains("Check NAFDAC")) div[data-testid="column"]:nth-child(2) .stButton > button:hover { background: rgba(255,255,255,0.3) !important; }
+    div[data-testid="stVerticalBlock"]:has(.hero-btn-ghost) .stButton > button:hover { background: rgba(255,255,255,0.2) !important; }
 
-    /* Target the Services Grid Columns natively to style them as cards */
-    /* Use direct child selectors to prevent global CSS bleed to the root app containers */
-    div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:has(div.stButton button p:contains("Open")) {
-        background: #FFFFFF;
+    /* Target the Services Grid Columns natively to style them as cards using hidden markers */
+    div[data-testid="stVerticalBlock"]:has(.service-card) {
+        background: #111827;
         border-radius: 16px;
         padding: 20px 15px;
         text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border: 1px solid #1F2937;
         transition: transform 0.2s, box-shadow 0.2s;
         margin-bottom: 15px;
     }
-    div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:has(div.stButton button p:contains("Open")):hover {
+    div[data-testid="stVerticalBlock"]:has(.service-card):hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(4, 120, 87, 0.1);
-        border-color: #34D399;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+        border-color: #10B981;
     }
 
-    .service-icon { font-size: 32px; margin-bottom: 10px; color: #047857; text-align: center; }
-    .service-title { font-weight: 700; font-size: 14px; margin-bottom: 5px; color: #0F172A; text-align: center; }
-    .service-desc { font-size: 12px; color: #64748B; line-height: 1.4; margin-bottom: 15px; text-align: center; }
+    .service-icon { font-size: 32px; margin-bottom: 10px; color: #10B981; text-align: center; }
+    .service-title { font-weight: 700; font-size: 14px; margin-bottom: 5px; color: #F8FAFC; text-align: center; }
+    .service-desc { font-size: 12px; color: #94A3B8; line-height: 1.4; margin-bottom: 15px; text-align: center; }
 
     /* Make the buttons inside these cards look embedded */
-    div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:has(div.stButton button p:contains("Open")) .stButton > button {
-        background: #F1F5F9 !important;
-        color: #047857 !important;
+    div[data-testid="stVerticalBlock"]:has(.service-card) .stButton > button {
+        background: #1F2937 !important;
+        color: #10B981 !important;
         border-radius: 8px !important;
         padding: 5px !important;
         font-weight: 600 !important;
         box-shadow: none !important;
     }
-    div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:has(div.stButton button p:contains("Open")) .stButton > button:hover { background: #E2E8F0 !important; }
+    div[data-testid="stVerticalBlock"]:has(.service-card) .stButton > button:hover { background: #374151 !important; }
 
     /* Featured Work Scroll */
     .featured-scroll {
@@ -339,12 +338,12 @@ st.markdown("""
     .featured-scroll::-webkit-scrollbar { display: none; }
     .featured-card {
         flex: 0 0 200px;
-        background: #FFFFFF; border-radius: 12px; overflow: hidden;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #E2E8F0;
+        background: #111827; border-radius: 12px; overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid #1F2937;
     }
-    .featured-img { width: 100%; height: 100px; object-fit: cover; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 30px;}
+    .featured-img { width: 100%; height: 100px; object-fit: cover; background: #1F2937; display: flex; align-items: center; justify-content: center; font-size: 30px;}
     .featured-info { padding: 12px; }
-    .featured-title { font-weight: 600; font-size: 13px; color: #0F172A; margin-bottom: 4px; }
+    .featured-title { font-weight: 600; font-size: 13px; color: #F8FAFC; margin-bottom: 4px; }
     .featured-tag { font-size: 10px; color: #D97706; font-weight: 600; text-transform: uppercase; }
 
     /* Header */
@@ -352,18 +351,23 @@ st.markdown("""
         display: flex; justify-content: space-between; align-items: center;
         margin-bottom: 20px;
     }
-    .header-greeting { font-size: 18px; font-weight: 700; color: #0F172A; margin: 0; line-height: 1.2; }
-    .header-sub { font-size: 13px; color: #64748B; margin: 0; }
-    .header-profile { width: 40px; height: 40px; border-radius: 50%; background: #047857; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0; }
+    .header-greeting { font-size: 18px; font-weight: 700; color: #F8FAFC; margin: 0; line-height: 1.2; }
+    .header-sub { font-size: 13px; color: #94A3B8; margin: 0; }
+    .header-profile { width: 40px; height: 40px; border-radius: 50%; background: #10B981; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0; }
     
     /* Bubbles & Containers */
-    .user-bubble { background: linear-gradient(135deg, #047857, #064E3B); padding: 14px 18px; border-radius: 20px 20px 5px 20px; color: white; margin-bottom: 10px; align-self: flex-end; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 80%; }
-    .ai-bubble { background: #FFFFFF; padding: 18px 22px; border-radius: 20px 20px 20px 5px; color: #0F172A; border: 1px solid #E2E8F0; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); line-height: 1.6; }
-    .glass-container { background: #FFFFFF; border: 1px solid #E2E8F0; padding: 25px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    .user-bubble { background: linear-gradient(135deg, #10B981, #059669); padding: 14px 18px; border-radius: 20px 20px 5px 20px; color: white; margin-bottom: 10px; align-self: flex-end; box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 80%; }
+    .ai-bubble { background: #111827; padding: 18px 22px; border-radius: 20px 20px 20px 5px; color: #F8FAFC; border: 1px solid #1F2937; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); line-height: 1.6; }
+    .glass-container { background: #111827; border: 1px solid #1F2937; padding: 25px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
     /* Input Fields */
-    .stTextInput>div>div>input { border-radius: 12px; border: 1px solid #CBD5E1; padding: 12px; }
-    .stTextInput>div>div>input:focus { border-color: #047857; box-shadow: 0 0 0 2px rgba(4,120,87,0.2); }
+    .stTextInput>div>div>input { border-radius: 12px; border: 1px solid #374151; padding: 12px; background-color: #111827; color: #F8FAFC; }
+    .stTextInput>div>div>input:focus { border-color: #10B981; box-shadow: 0 0 0 2px rgba(16,185,129,0.2); }
+
+    /* Fix Streamlit Bottom Block Overlay (chat input background) */
+    [data-testid="stBottomBlockContainer"] {
+        background-color: transparent !important;
+    }
     
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -505,6 +509,7 @@ app_mode = st.session_state.app_mode
 # Bottom Navigation native Streamlit buttons
 nav_container = st.container(border=True)
 with nav_container:
+    st.markdown('<div class="bottom-nav"></div>', unsafe_allow_html=True)
     c1, c2, c3, c4, c5 = st.columns(5)
     with c1:
         if st.button("🏠\nHome", key="nav_home", use_container_width=True): set_page("Home"); st.rerun()
@@ -600,30 +605,42 @@ if app_mode == "Home":
     # Hero Buttons using Native Streamlit
     hcol1, hcol2, hcol3 = st.columns([1, 1, 1])
     with hcol1:
+        st.markdown('<div class="hero-btn-gold"></div>', unsafe_allow_html=True)
         if st.button("Drug Lookup", key="hero_drug", use_container_width=True): set_page("Drug Hub"); st.rerun()
     with hcol2:
+        st.markdown('<div class="hero-btn-ghost"></div>', unsafe_allow_html=True)
         if st.button("Check NAFDAC", key="hero_naf", use_container_width=True): set_page("NAFDAC Verifier"); st.rerun()
 
     # Interactive Services Grid
-    st.markdown("<h4 style='color: #0F172A; font-size: 18px; margin-top: 20px; margin-bottom: 15px; font-weight: 700;'>MedP-AI Services</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #F8FAFC; font-size: 18px; margin-top: 20px; margin-bottom: 15px; font-weight: 700;'>MedP-AI Services</h4>", unsafe_allow_html=True)
     
     gcol1, gcol2 = st.columns(2)
     with gcol1:
-        st.markdown("""<div class="service-icon">💊</div><div class="service-title">DRUG LOOKUP</div><div class="service-desc">Search generic and brand names, view drug details.</div>""", unsafe_allow_html=True)
-        if st.button("Open", key="grid_drug", use_container_width=True): set_page("Drug Hub"); st.rerun()
+        with st.container():
+            st.markdown('<div class="service-card"></div>', unsafe_allow_html=True)
+            st.markdown("""<div class="service-icon">💊</div><div class="service-title">DRUG LOOKUP</div><div class="service-desc">Search generic and brand names, view drug details.</div>""", unsafe_allow_html=True)
+            if st.button("Open", key="grid_drug", use_container_width=True): set_page("Drug Hub"); st.rerun()
         
-        st.markdown("""<div style="height: 20px;"></div><div class="service-icon">🎓</div><div class="service-title">EXAM MASTERY HUB</div><div class="service-desc">Access AI-powered exam drills and study tools.</div>""", unsafe_allow_html=True)
-        if st.button("Open", key="grid_exam", use_container_width=True): set_page("Exam Mastery Hub"); st.rerun()
+        st.markdown("""<div style="height: 20px;"></div>""", unsafe_allow_html=True)
+        with st.container():
+            st.markdown('<div class="service-card"></div>', unsafe_allow_html=True)
+            st.markdown("""<div class="service-icon">🎓</div><div class="service-title">EXAM MASTERY HUB</div><div class="service-desc">Access AI-powered exam drills and study tools.</div>""", unsafe_allow_html=True)
+            if st.button("Open", key="grid_exam", use_container_width=True): set_page("Exam Mastery Hub"); st.rerun()
 
     with gcol2:
-        st.markdown("""<div class="service-icon">🛡️</div><div class="service-title">NAFDAC VERIFIER</div><div class="service-desc">Validate registration numbers for authenticity.</div>""", unsafe_allow_html=True)
-        if st.button("Open", key="grid_naf", use_container_width=True): set_page("NAFDAC Verifier"); st.rerun()
+        with st.container():
+            st.markdown('<div class="service-card"></div>', unsafe_allow_html=True)
+            st.markdown("""<div class="service-icon">🛡️</div><div class="service-title">NAFDAC VERIFIER</div><div class="service-desc">Validate registration numbers for authenticity.</div>""", unsafe_allow_html=True)
+            if st.button("Open", key="grid_naf", use_container_width=True): set_page("NAFDAC Verifier"); st.rerun()
 
-        st.markdown("""<div style="height: 20px;"></div><div class="service-icon">🛒</div><div class="service-title">VENDOR CONNECT</div><div class="service-desc">Securely interact with drug vendors and buy.</div>""", unsafe_allow_html=True)
-        if st.button("Open", key="grid_vend", use_container_width=True): set_page("🌿 Vendor Hub"); st.rerun()
+        st.markdown("""<div style="height: 20px;"></div>""", unsafe_allow_html=True)
+        with st.container():
+            st.markdown('<div class="service-card"></div>', unsafe_allow_html=True)
+            st.markdown("""<div class="service-icon">🛒</div><div class="service-title">VENDOR CONNECT</div><div class="service-desc">Securely interact with drug vendors and buy.</div>""", unsafe_allow_html=True)
+            if st.button("Open", key="grid_vend", use_container_width=True): set_page("🌿 Vendor Hub"); st.rerun()
 
     # Featured Work Highlights
-    st.markdown("<h4 style='color: #0F172A; font-size: 18px; margin-bottom: 15px; font-weight: 700;'>Featured Highlights</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #F8FAFC; font-size: 18px; margin-bottom: 15px; font-weight: 700;'>Featured Highlights</h4>", unsafe_allow_html=True)
     st.markdown("""
     <div class="featured-scroll">
         <div class="featured-card">

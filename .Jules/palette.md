@@ -1,3 +1,1 @@
-## 2026-04-22 - Improved Streamlit Forms with Placeholders and Tooltips
-**Learning:** Using `placeholder` and `help` parameters in `st.text_input` provides immediate context for users, making the purpose and expected format clear without cluttering the UI with additional text blocks. This is crucial for accessibility and reducing user error, especially on complex forms like Marketplaces or Search Tools.
-**Action:** When creating text inputs, always utilize `placeholder` for format examples and `help` for detailed tooltips to make Streamlit apps more accessible and intuitive.
+2026-01-01: UX/Accessibility Learning - Streamlit styling with :has() pseudo-class and hidden marker approach combined with st.container() ensures stable, robust UI customization, completely preventing layout scattering, unlike native index-based nth-child targeting which often breaks.
