@@ -14,6 +14,19 @@ USERS_DB = "users_db.json"
 PENDING_PRODUCTS_DB = "pending_products.json"
 APPROVED_PRODUCTS_DB = "approved_products.json"
 
+import secrets
+import string
+
+# Generate a random fallback password for safety if environment variable is not set.
+# This ensures that even if it falls back, it's not a known hardcoded string.
+_fallback_admin_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(20))
+
+def get_admin_password():
+    try:
+        return st.secrets.get("ADMIN_PASSWORD", os.environ.get("ADMIN_PASSWORD", _fallback_admin_password))
+    except Exception:
+        return os.environ.get("ADMIN_PASSWORD", _fallback_admin_password)
+
 # --- DATABASE LOADERS & SAVERS ---
 def load_json(file_path, default_data):
     if os.path.exists(file_path):
@@ -31,7 +44,7 @@ def save_chat(data): save_json(CHAT_DB, data)
 def load_users():
     return load_json(USERS_DB, {
         "MED AI": {
-            "password": "Desprix07!", "score": 100, "avatar": None,
+            "password": get_admin_password(), "score": 100, "avatar": None,
             "bio": "Founder of Desprix", "school": "UNIZIK", 
             "level": "200L", "course": "Pharmacy", "phone": "08000000000",
             "saved_cbt": [], "saved_theory": [], "history": []
@@ -478,7 +491,7 @@ nav_options = ["Home", "My Profile", "Find Remedy", "Drug Researcher (PRO)", "NA
 if username == "MED AI":
     nav_options.append("👑 Admin Dashboard")
 
-if username == "MED AI" and user_data.get('password') == "Desprix07!":
+if username == "MED AI" and user_data.get('password') == get_admin_password():
     nav_options.insert(0, "🛡️ Admin Dashboard")
 
 if 'app_mode' not in st.session_state:

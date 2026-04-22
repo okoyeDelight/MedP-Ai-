@@ -1,0 +1,4 @@
+## 2024-04-22 - Fix Hardcoded Admin Password
+**Vulnerability:** A hardcoded admin password `Desprix07!` was used as the default value in `load_users()` and inside authorization check for the `Admin Dashboard`.
+**Learning:** Hardcoded credentials can easily leak out through source code repositories or error traces. This exposes administrative functionalities to unauthorized users.
+**Prevention:** Avoid hardcoding credentials in source code. Retrieve sensitive values dynamically at runtime via secure environment variables or a secrets manager (e.g., Streamlit's `st.secrets` or `os.environ`). Ensure proper error handling to fallback securely if these are not set.
