@@ -873,21 +873,29 @@ if app_mode in ["Drug Researcher (PRO)", "Drug Hub"]:
     st.markdown('<p class="pro-header" style="font-weight:700; font-size:24px; color:#0F172A;">🧪 Drug Research & API</p>', unsafe_allow_html=True)
     drug = st.text_input("Enter Drug Name:", placeholder="e.g. Paracetamol", help="Type the generic or brand name of the drug.")
     if st.button("Analyze API", type="primary"):
-        log_user_history(username, f"Analyzed Drug: {drug}")
-        model = genai.GenerativeModel('models/gemini-2.5-flash')
-        resp = model.generate_content(f"Deep breakdown of {drug} for pharmacy student.")
-        st.markdown(f'<div class="glass-container">{resp.text}</div>', unsafe_allow_html=True)
+        if not drug.strip():
+            st.warning("Please enter a drug name to analyze.")
+        else:
+            log_user_history(username, f"Analyzed Drug: {drug}")
+            with st.spinner("Analyzing drug data..."):
+                model = genai.GenerativeModel('models/gemini-2.5-flash')
+                resp = model.generate_content(f"Deep breakdown of {drug} for pharmacy student.")
+                st.markdown(f'<div class="glass-container">{resp.text}</div>', unsafe_allow_html=True)
 
 if app_mode == "NAFDAC Verifier":
     st.markdown('<p class="pro-header" style="font-weight:700; font-size:24px; color:#0F172A;">🔍 Live NAFDAC Verifier</p>', unsafe_allow_html=True)
     reg = st.text_input("Enter NAFDAC Reg No:", placeholder="e.g. A4-1234", help="Enter the NAFDAC Registration Number to verify.")
     if st.button("Verify Registration", type="primary"):
-        log_user_history(username, f"Verified NAFDAC: {reg}")
-        try:
-            model = genai.GenerativeModel('models/gemini-2.5-flash', tools=[{"google_search": {}}])
-            resp = model.generate_content(f"Verify NAFDAC registration: {reg}.")
-            st.markdown(f'<div class="glass-container">{resp.text}</div>', unsafe_allow_html=True)
-        except Exception as e: st.error("Search Error")
+        if not reg.strip():
+            st.warning("Please enter a registration number to verify.")
+        else:
+            log_user_history(username, f"Verified NAFDAC: {reg}")
+            try:
+                with st.spinner("Verifying NAFDAC registration..."):
+                    model = genai.GenerativeModel('models/gemini-2.5-flash', tools=[{"google_search": {}}])
+                    resp = model.generate_content(f"Verify NAFDAC registration: {reg}.")
+                    st.markdown(f'<div class="glass-container">{resp.text}</div>', unsafe_allow_html=True)
+            except Exception as e: st.error("Search Error")
 
 # --- 6. EXAM MASTERY HUB (MASSIVELY UPGRADED) ---
 if app_mode == "Exam Mastery Hub":
