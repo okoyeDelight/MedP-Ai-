@@ -5,7 +5,7 @@ import pandas as pd
 import json
 import os
 import datetime
-from datetime import timedeltq
+from datetime import timedelta
 import base64
 
 # --- MINI DATABASE SETUP ---
