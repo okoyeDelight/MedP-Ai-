@@ -211,7 +211,7 @@ st.markdown("""
     [data-testid="stSidebar"] { display: none !important; } /* Hide sidebar completely for dashboard feel */
 
     /* Typography & Spacing */
-    .block-container { padding-top: 1rem !important; padding-bottom: 80px !important; max-width: 1200px; }
+    .block-container { padding-top: 1rem !important; padding-bottom: 80px !important; max-width: 480px !important; margin: 0 auto !important; }
 
     /* Custom Streamlit Button */
     .stButton>button {
@@ -229,12 +229,13 @@ st.markdown("""
         bottom: 80px; /* Shifted up to avoid overlapping with native stBottomBlockContainer chat input */
         left: 0;
         right: 0;
+        margin: 0 auto !important;
         background: #111827;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
         z-index: 99999; /* Ensure it is above other elements */
         border-top: 1px solid #1F2937;
         padding: 10px 0;
-        max-width: 100% !important;
+        max-width: 480px !important;
     }
 
     /* Make the nav buttons look like icons */
@@ -367,6 +368,8 @@ st.markdown("""
     /* Fix Streamlit Bottom Block Overlay (chat input background) */
     [data-testid="stBottomBlockContainer"] {
         background-color: transparent !important;
+        max-width: 480px !important;
+        margin: 0 auto !important;
     }
     
     #MainMenu {visibility: hidden;}
