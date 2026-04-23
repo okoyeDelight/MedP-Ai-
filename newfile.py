@@ -7,6 +7,7 @@ import os
 import datetime
 from datetime import timedelta
 import base64
+import urllib.parse
 
 # --- MINI DATABASE SETUP ---
 CHAT_DB = "global_chat.json"
@@ -1162,7 +1163,8 @@ if app_mode == "🌿 Vendor Hub":
                     raw_phone = item.get('link', '').replace('+', '').replace(' ', '')
                     wa_phone = "234" + raw_phone[1:] if raw_phone.startswith('0') else raw_phone
                     msg_text = f"Hello, I am interested in your {item['name']} on Desprix Med AI."
-                    st.link_button(f"💬 Chat with @{item['vendor']}", f"https://api.whatsapp.com/send?phone={wa_phone}&text={msg_text}", use_container_width=True)
+                    encoded_msg_text = urllib.parse.quote(msg_text)
+                    st.link_button(f"💬 Chat with @{item['vendor']}", f"https://api.whatsapp.com/send?phone={wa_phone}&text={encoded_msg_text}", use_container_width=True)
                             
     with tab2:
         st.subheader("List Your Item")
