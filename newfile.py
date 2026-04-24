@@ -469,8 +469,8 @@ else:
 
 pic_upload = st.sidebar.file_uploader("Change Picture", type=['png', 'jpg', 'jpeg'], label_visibility="collapsed")
 
-if pic_upload:
-    if st.sidebar.button("💾 Confirm New Picture", use_container_width=True):
+if st.sidebar.button("💾 Confirm New Picture", use_container_width=True, disabled=not pic_upload, help="Upload a picture first to enable this button"):
+    if pic_upload:
         encoded_img = base64.b64encode(pic_upload.read()).decode('utf-8')
         users_db = load_users()
         users_db[username]["avatar"] = encoded_img
@@ -688,27 +688,30 @@ if app_mode == "Find Remedy":
     st.write("Get safe, step-by-step household remedies verified by AI.")
     u_input = st.text_input("What is your symptom or condition?", placeholder="e.g. Malaria, but I am 5 months pregnant")
     if st.button("Search Remedy", type="primary"):
-        log_user_history(username, f"Searched Remedy: {u_input}")
-        with st.spinner("Consulting Med AI..."):
-            try:
-                all_approved = load_approved_products()
-                active_products = []
-                today_date = datetime.datetime.now().strftime("%Y-%m-%d")
-                for p in all_approved:
-                    if p.get("expiry_date", "2000-01-01") >= today_date:
-                        safe_prod = {k: v for k, v in p.items() if k != 'image'}
-                        active_products.append(safe_prod)
+        if not u_input.strip():
+            st.warning("Please enter a symptom or condition to search.")
+        else:
+            log_user_history(username, f"Searched Remedy: {u_input}")
+            with st.spinner("Consulting Med AI..."):
+                try:
+                    all_approved = load_approved_products()
+                    active_products = []
+                    today_date = datetime.datetime.now().strftime("%Y-%m-%d")
+                    for p in all_approved:
+                        if p.get("expiry_date", "2000-01-01") >= today_date:
+                            safe_prod = {k: v for k, v in p.items() if k != 'image'}
+                            active_products.append(safe_prod)
 
-                model = genai.GenerativeModel('models/gemini-2.5-flash')
-                prompt = f"""Act as a strict, ethical Nigerian clinical pharmacist. Query: '{u_input}'\n1. Give a practical leaf remedy in simple English. Ensure it is safe based on the query.\n2. Provide a short, funny summary in Pidgin.\n3. VETTING: List of ACTIVE supplements: {json.dumps(active_products)}. If a product is 100% safe, recommend it."""
-                resp = model.generate_content(prompt)
-                st.markdown(f'<div class="glass-container">{resp.text}</div>', unsafe_allow_html=True)
-                
-                for prod in all_approved:
-                    if prod.get("expiry_date", "2000-01-01") >= today_date and prod['name'] in resp.text:
-                        img_html = f'<img src="data:image/jpeg;base64,{prod["image"]}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;">' if prod.get("image") else ""
-                        st.markdown(f"""<div style="background: rgba(30, 41, 59, 0.8); padding: 15px; border-radius: 15px; border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 15px; text-align: center;">{img_html}<h3 style="color: #10b981;">{prod['name']}</h3><p>{prod['dosage_form']} • {prod['price']}</p><a href="{prod['link']}" target="_blank" style="text-decoration: none;"><div style="background: linear-gradient(135deg, #10b981, #059669); padding: 10px; border-radius: 10px; color: white; font-weight: bold;">🛒 Buy Now</div></a></div>""", unsafe_allow_html=True)
-            except Exception as e: st.error(f"Error: {e}")
+                    model = genai.GenerativeModel('models/gemini-2.5-flash')
+                    prompt = f"""Act as a strict, ethical Nigerian clinical pharmacist. Query: '{u_input}'\n1. Give a practical leaf remedy in simple English. Ensure it is safe based on the query.\n2. Provide a short, funny summary in Pidgin.\n3. VETTING: List of ACTIVE supplements: {json.dumps(active_products)}. If a product is 100% safe, recommend it."""
+                    resp = model.generate_content(prompt)
+                    st.markdown(f'<div class="glass-container">{resp.text}</div>', unsafe_allow_html=True)
+
+                    for prod in all_approved:
+                        if prod.get("expiry_date", "2000-01-01") >= today_date and prod['name'] in resp.text:
+                            img_html = f'<img src="data:image/jpeg;base64,{prod["image"]}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;">' if prod.get("image") else ""
+                            st.markdown(f"""<div style="background: rgba(30, 41, 59, 0.8); padding: 15px; border-radius: 15px; border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 15px; text-align: center;">{img_html}<h3 style="color: #10b981;">{prod['name']}</h3><p>{prod['dosage_form']} • {prod['price']}</p><a href="{prod['link']}" target="_blank" style="text-decoration: none;"><div style="background: linear-gradient(135deg, #10b981, #059669); padding: 10px; border-radius: 10px; color: white; font-weight: bold;">🛒 Buy Now</div></a></div>""", unsafe_allow_html=True)
+                except Exception as e: st.error(f"Error: {e}")
 
 # --- 2. VENDOR HUB ---
 if app_mode == "🌿 Vendor Hub":
@@ -955,8 +958,8 @@ if app_mode == "Exam Mastery Hub":
         st.subheader("Lecture Secret Extractor")
         aud = st.file_uploader("Upload Lecture Audio", type=['mp3', 'wav', 'm4a'])
         doc = st.file_uploader("Upload Class Handout", type=['pdf'])
-        if aud and doc:
-            if st.button("Analyze Audio & Compare", type="primary"):
+        if st.button("Analyze Audio & Compare", type="primary", disabled=not (aud and doc), help="Upload both audio and handout to enable analysis"):
+            if aud and doc:
                 log_user_history(username, "Used Lecture Analyst")
                 with st.spinner("Med AI is listening..."):
                     try:
@@ -970,8 +973,8 @@ if app_mode == "Exam Mastery Hub":
         st.subheader("Interactive Note-to-CBT (Auto-Saves)")
         cbt_note = st.file_uploader("Upload Notes for MCQs", type=['png', 'jpg', 'pdf'])
         quiz_title = st.text_input("Name this Quiz (e.g., Pharm 201 Midterm):")
-        if cbt_note and quiz_title:
-            if st.button("Generate & Save CBT", type="primary"):
+        if st.button("Generate & Save CBT", type="primary", disabled=not (cbt_note and quiz_title), help="Upload notes and enter a title to enable generation"):
+            if cbt_note and quiz_title:
                 log_user_history(username, f"Generated CBT: {quiz_title}")
                 with st.spinner("Building your quiz..."):
                     try:
@@ -1000,8 +1003,8 @@ if app_mode == "Exam Mastery Hub":
         st.subheader("Note-to-Theory (Essay Question Generator)")
         theory_note = st.file_uploader("Upload Notes for Theory Prep", type=['png', 'jpg', 'pdf'])
         theory_title = st.text_input("Name this Topic (e.g., Autonomic Nervous System):")
-        if theory_note and theory_title:
-            if st.button("Generate & Save Theory Exam", type="primary"):
+        if st.button("Generate & Save Theory Exam", type="primary", disabled=not (theory_note and theory_title), help="Upload notes and enter a title to enable generation"):
+            if theory_note and theory_title:
                 log_user_history(username, f"Generated Theory: {theory_title}")
                 with st.spinner("Drafting standard essay questions & grading guides..."):
                     try:
@@ -1063,7 +1066,9 @@ if app_mode == "Structure Master Class":
     struct_query = st.text_input("Enter a structure:", placeholder="Type a chemical name...")
     
     if st.button("Teach Me How To Draw This", type="primary"):
-        if struct_query:
+        if not struct_query.strip():
+            st.warning("Please enter a structure name to analyze.")
+        else:
             log_user_history(username, f"Mastered Structure: {struct_query}")
             with st.spinner("Analyzing..."):
                 try:
