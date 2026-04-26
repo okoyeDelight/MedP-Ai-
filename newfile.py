@@ -723,24 +723,24 @@ if app_mode == "🌿 Vendor Hub":
         st.write("List your verified herbal supplement on Desprix Med AI.")
         with st.form("vendor_application"):
             st.write("### 1. Product Details")
-            prod_name = st.text_input("Product Name")
-            prod_treats = st.text_input("What does it treat? (e.g. Malaria, Typhoid)")
-            prod_img_upload = st.file_uploader("Upload Product Image (Required for display)", type=['png', 'jpg', 'jpeg'])
+            prod_name = st.text_input("Product Name *")
+            prod_treats = st.text_input("What does it treat? (e.g. Malaria, Typhoid) *")
+            prod_img_upload = st.file_uploader("Upload Product Image *", type=['png', 'jpg', 'jpeg'])
             
             st.write("### 2. Clinical Data (Hidden from Public)")
-            prod_ingredients = st.text_area("Active Ingredients / Constituents")
-            prod_contra = st.text_area("Contraindications & Interactions (Who must NOT take this?)")
+            prod_ingredients = st.text_area("Active Ingredients / Constituents *")
+            prod_contra = st.text_area("Contraindications & Interactions (Who must NOT take this?) *")
             prod_dosage_form = st.text_input("Dosage Form (e.g. Liquid Syrup, Capsule)")
             prod_dosage = st.text_input("Dosage Instructions")
             
             st.write("### 3. Sales Info")
             prod_price = st.text_input("Selling Price to Customer (e.g. ₦2,500)")
-            prod_link = st.text_input("WhatsApp Link or Website to Buy")
+            prod_link = st.text_input("WhatsApp Link or Website to Buy *")
             
             st.write("### 4. Subscription Plan & Payment")
             st.info("🏦 Payment Details: Account Number: **1862690486** | Bank: **Access Bank**")
             plan_choice = st.radio("Select Listing Duration:", ["3 Months - ₦10,000", "6 Months - ₦18,000", "1 Year - ₦30,000"])
-            pay_ref = st.text_input("Sender Name / Bank Transaction Reference")
+            pay_ref = st.text_input("Sender Name / Bank Transaction Reference *")
             receipt_upload = st.file_uploader("Upload Payment Receipt", type=['png', 'jpg', 'jpeg'])
 
             submitted = st.form_submit_button("Submit Product & Payment for Approval", type="primary")
@@ -763,7 +763,7 @@ if app_mode == "🌿 Vendor Hub":
                     st.success("✅ Application submitted! Admin will verify and activate your product.")
                     st.balloons()
                 else:
-                    st.error("Please fill in all fields and upload a product image.")
+                    st.error("Please fill in all required fields (*).")
 
     with tab_dash:
         st.write("### Manage My Products")
@@ -792,7 +792,7 @@ if app_mode == "🌿 Vendor Hub":
                         with st.expander(f"🔄 Renew Subscription for {prod['name']}"):
                             st.info("🏦 Payment Details: Account Number: **1862690486** | Bank: **Access Bank**")
                             r_plan = st.radio("Select Renewal Plan:", ["3 Months - ₦10,000", "6 Months - ₦18,000", "1 Year - ₦30,000"], key=f"r_plan_{i}")
-                            r_ref = st.text_input("Payment Reference", key=f"r_ref_{i}")
+                            r_ref = st.text_input("Payment Reference *", key=f"r_ref_{i}")
                             r_receipt = st.file_uploader("Upload Receipt", type=['png', 'jpg'], key=f"r_rec_{i}")
                             
                             if st.button("Submit Renewal", key=f"r_btn_{i}", type="primary"):
@@ -809,7 +809,7 @@ if app_mode == "🌿 Vendor Hub":
                                     save_pending_products(pending)
                                     st.success("Renewal payment submitted! Waiting for admin approval.")
                                 else:
-                                    st.error("Payment Reference is required.")
+                                    st.error("Please fill in all required fields (*).")
 
 # --- 3. ADMIN DASHBOARD ---
 if app_mode == "👑 Admin Dashboard" and username == "AdminAyo":
@@ -1177,8 +1177,8 @@ if app_mode == "🌿 Vendor Hub":
             st.error("⚠️ You must add your phone number in **'My Profile'** before you can sell!")
         else:
             with st.form("market_form", clear_on_submit=True):
-                item_name = st.text_input("Item Name (e.g. Lab Coat, 200L PQ)")
-                price = st.text_input("Price (₦)")
+                item_name = st.text_input("Item Name (e.g. Lab Coat, 200L PQ) *")
+                price = st.text_input("Price (₦) *")
                 prod_pic = st.file_uploader("Upload Product Image", type=['png', 'jpg', 'jpeg'])
                 condition = st.selectbox("Condition", ["Brand New", "Gently Used", "Well Used"])
                 details = st.text_area("Description")
@@ -1195,6 +1195,8 @@ if app_mode == "🌿 Vendor Hub":
                         save_pending_products(pending_db)
                         st.success("Sent to Admin for approval! ✅")
                         st.rerun()
+                    else:
+                        st.error("Please fill in all required fields (*).")
 
 # --- 🛡️ ADMIN DASHBOARD (MASTER CONTROL) ---
 if app_mode == "🛡️ Admin Dashboard":
