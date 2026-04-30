@@ -6,3 +6,6 @@
 ## 2025-01-29 - Disabled States vs Hidden Actions
 **Learning:** In Streamlit, conditionally hiding buttons completely (e.g., `if file_uploaded:` wrapping the `st.button()` declaration) is a poor UX pattern because it removes affordance and context. Users don't know an action is possible or what is required to unlock it.
 **Action:** Use the `disabled` parameter on the button directly (e.g., `st.button(disabled=not file_uploaded, help="Upload a file to enable")`) so the UI layout remains stable, the action is discoverable, and the hover tooltip explains the prerequisite.
+## 2025-05-01 - Silent Form Failures in Streamlit
+**Learning:** Forms in Streamlit often lack clear indicators for required fields, and submitting them with missing required fields often fails silently. This leaves the user wondering if the form was actually submitted and what went wrong.
+**Action:** Always provide explicit visual indicators (like `*`) for required fields. In the form submission handling logic, use an `else` branch to provide an explicit `st.error` message when validation fails, ensuring the user is informed of the issue.
