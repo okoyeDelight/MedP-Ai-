@@ -1177,8 +1177,8 @@ if app_mode == "🌿 Vendor Hub":
             st.error("⚠️ You must add your phone number in **'My Profile'** before you can sell!")
         else:
             with st.form("market_form", clear_on_submit=True):
-                item_name = st.text_input("Item Name (e.g. Lab Coat, 200L PQ)")
-                price = st.text_input("Price (₦)")
+                item_name = st.text_input("Item Name (e.g. Lab Coat, 200L PQ) *")
+                price = st.text_input("Price (₦) *")
                 prod_pic = st.file_uploader("Upload Product Image", type=['png', 'jpg', 'jpeg'])
                 condition = st.selectbox("Condition", ["Brand New", "Gently Used", "Well Used"])
                 details = st.text_area("Description")
@@ -1195,6 +1195,8 @@ if app_mode == "🌿 Vendor Hub":
                         save_pending_products(pending_db)
                         st.success("Sent to Admin for approval! ✅")
                         st.rerun()
+                    else:
+                        st.error("Please fill in the required fields (Item Name and Price).")
 
 # --- 🛡️ ADMIN DASHBOARD (MASTER CONTROL) ---
 if app_mode == "🛡️ Admin Dashboard":
